@@ -1,0 +1,58 @@
+[
+    {
+        "date": 1508832449412,
+        "dau": 40,
+        "apa": 85,
+        "applyNum": 95,
+        "normalBet": 99,
+        "advancedBet": 67
+    },
+    {
+        "date": 1508832449413,
+        "dau": 61,
+        "apa": 84,
+        "applyNum": 38,
+        "normalBet": 3,
+        "advancedBet": 10
+    },
+    {
+        "date": 1508832449413,
+        "dau": 54,
+        "apa": 16,
+        "applyNum": 92,
+        "normalBet": 20,
+        "advancedBet": 82
+    },
+    {
+        "date": 1508832449413,
+        "dau": 5,
+        "apa": 58,
+        "applyNum": 18,
+        "normalBet": 99,
+        "advancedBet": 6
+    },
+    {
+        "date": 1508832449413,
+        "dau": 52,
+        "apa": 13,
+        "applyNum": 59,
+        "normalBet": 33,
+        "advancedBet": 22
+    },
+    {
+        "date": 1508832449413,
+        "dau": 68,
+        "apa": 93,
+        "applyNum": 9,
+        "normalBet": 86,
+        "advancedBet": 68
+    },
+    {
+        "date": 1508832449413,
+        "dau": 75,
+        "apa": 88,
+        "applyNum": 45,
+        "normalBet": 92,
+        "advancedBet": 74
+    }
+]

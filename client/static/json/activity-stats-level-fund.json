@@ -1,0 +1,93 @@
+[
+    {
+        "date": 1509243945675,
+        "dau": 76,
+        "apa": 44,
+        "server": 39,
+        "channel": 37,
+        "buyPeopleNum": 8,
+        "getPeopleNumInLv15": 66,
+        "getPeopleNumInLv20": 97,
+        "getPeopleNumInLv25_45": 55,
+        "getPeopleNumInLv50_80": 9,
+        "getPeopleNumInLv90": 46
+    },
+    {
+        "date": 1509330345675,
+        "dau": 48,
+        "apa": 65,
+        "server": 96,
+        "channel": 91,
+        "buyPeopleNum": 12,
+        "getPeopleNumInLv15": 38,
+        "getPeopleNumInLv20": 88,
+        "getPeopleNumInLv25_45": 35,
+        "getPeopleNumInLv50_80": 95,
+        "getPeopleNumInLv90": 96
+    },
+    {
+        "date": 1509416745675,
+        "dau": 37,
+        "apa": 2,
+        "server": 5,
+        "channel": 49,
+        "buyPeopleNum": 52,
+        "getPeopleNumInLv15": 17,
+        "getPeopleNumInLv20": 57,
+        "getPeopleNumInLv25_45": 18,
+        "getPeopleNumInLv50_80": 58,
+        "getPeopleNumInLv90": 22
+    },
+    {
+        "date": 1509503145675,
+        "dau": 46,
+        "apa": 75,
+        "server": 27,
+        "channel": 85,
+        "buyPeopleNum": 5,
+        "getPeopleNumInLv15": 56,
+        "getPeopleNumInLv20": 68,
+        "getPeopleNumInLv25_45": 21,
+        "getPeopleNumInLv50_80": 85,
+        "getPeopleNumInLv90": 12
+    },
+    {
+        "date": 1509589545675,
+        "dau": 54,
+        "apa": 51,
+        "server": 87,
+        "channel": 17,
+        "buyPeopleNum": 46,
+        "getPeopleNumInLv15": 12,
+        "getPeopleNumInLv20": 4,
+        "getPeopleNumInLv25_45": 56,
+        "getPeopleNumInLv50_80": 2,
+        "getPeopleNumInLv90": 50
+    },
+    {
+        "date": 1509675945675,
+        "dau": 72,
+        "apa": 54,
+        "server": 78,
+        "channel": 1,
+        "buyPeopleNum": 27,
+        "getPeopleNumInLv15": 59,
+        "getPeopleNumInLv20": 23,
+        "getPeopleNumInLv25_45": 33,
+        "getPeopleNumInLv50_80": 88,
+        "getPeopleNumInLv90": 61
+    },
+    {
+        "date": 1509762345675,
+        "dau": 4,
+        "apa": 33,
+        "server": 11,
+        "channel": 88,
+        "buyPeopleNum": 98,
+        "getPeopleNumInLv15": 58,
+        "getPeopleNumInLv20": 65,
+        "getPeopleNumInLv25_45": 10,
+        "getPeopleNumInLv50_80": 96,
+        "getPeopleNumInLv90": 94
+    }
+]

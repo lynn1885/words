@@ -1,0 +1,93 @@
+[
+    {
+        "date": 1509243945686,
+        "dau": 42,
+        "apa": 61,
+        "server": 68,
+        "channel": 63,
+        "todayGetPeoNum": 21,
+        "accumulateGet1DayPeoNum": 29,
+        "accumulateGet2DaysPeoNum": 42,
+        "accumulateGet3DaysPeoNum": 48,
+        "accumulateGet4DaysPeoNum": 39,
+        "accumulateGet5DaysPeoNum": 79
+    },
+    {
+        "date": 1509330345686,
+        "dau": 9,
+        "apa": 52,
+        "server": 92,
+        "channel": 68,
+        "todayGetPeoNum": 27,
+        "accumulateGet1DayPeoNum": 8,
+        "accumulateGet2DaysPeoNum": 15,
+        "accumulateGet3DaysPeoNum": 30,
+        "accumulateGet4DaysPeoNum": 22,
+        "accumulateGet5DaysPeoNum": 56
+    },
+    {
+        "date": 1509416745686,
+        "dau": 61,
+        "apa": 88,
+        "server": 51,
+        "channel": 0,
+        "todayGetPeoNum": 99,
+        "accumulateGet1DayPeoNum": 60,
+        "accumulateGet2DaysPeoNum": 53,
+        "accumulateGet3DaysPeoNum": 87,
+        "accumulateGet4DaysPeoNum": 37,
+        "accumulateGet5DaysPeoNum": 51
+    },
+    {
+        "date": 1509503145686,
+        "dau": 92,
+        "apa": 65,
+        "server": 75,
+        "channel": 50,
+        "todayGetPeoNum": 34,
+        "accumulateGet1DayPeoNum": 2,
+        "accumulateGet2DaysPeoNum": 96,
+        "accumulateGet3DaysPeoNum": 11,
+        "accumulateGet4DaysPeoNum": 75,
+        "accumulateGet5DaysPeoNum": 26
+    },
+    {
+        "date": 1509589545686,
+        "dau": 17,
+        "apa": 32,
+        "server": 91,
+        "channel": 82,
+        "todayGetPeoNum": 16,
+        "accumulateGet1DayPeoNum": 53,
+        "accumulateGet2DaysPeoNum": 80,
+        "accumulateGet3DaysPeoNum": 47,
+        "accumulateGet4DaysPeoNum": 62,
+        "accumulateGet5DaysPeoNum": 25
+    },
+    {
+        "date": 1509675945686,
+        "dau": 92,
+        "apa": 63,
+        "server": 90,
+        "channel": 17,
+        "todayGetPeoNum": 72,
+        "accumulateGet1DayPeoNum": 83,
+        "accumulateGet2DaysPeoNum": 87,
+        "accumulateGet3DaysPeoNum": 94,
+        "accumulateGet4DaysPeoNum": 53,
+        "accumulateGet5DaysPeoNum": 57
+    },
+    {
+        "date": 1509762345686,
+        "dau": 41,
+        "apa": 39,
+        "server": 65,
+        "channel": 11,
+        "todayGetPeoNum": 30,
+        "accumulateGet1DayPeoNum": 43,
+        "accumulateGet2DaysPeoNum": 30,
+        "accumulateGet3DaysPeoNum": 85,
+        "accumulateGet4DaysPeoNum": 49,
+        "accumulateGet5DaysPeoNum": 57
+    }
+]

@@ -1,0 +1,81 @@
+div.word-match {
+    display: inline-block;
+    position: relative;
+    background: rgb(245, 239, 224);
+    color: rgb(194, 119, 34);
+    margin: 0px 1px;
+    padding: 2px 3px;
+    border-radius: 4px;
+}
+
+.word-popup {
+    font-size: 14px!important;
+    font-family: "yahei consolas hybrid";    
+    background: rgb(250, 247, 242)!important;
+    width: 400px!important;
+    height: 200px!important;
+    overflow-x: hidden;
+    overflow-y: auto;
+    z-index: 999999999;
+    padding: 20px;
+    box-sizing: border-box;
+    line-height: 1.4;
+    border: 2px solid #888;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+.word-popup ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+.word-popup li {
+    padding: 0;
+    margin: 0;    
+    font-weight: normal;
+    list-style: none;
+    color: #333;
+}
+.word-popup li pre{
+    padding: 0;
+    margin: 0;    
+    font-family: "yahei consolas hybrid";
+    color: #999;
+    white-space: pre-wrap;
+    border: none;
+    background: inherit;
+    font-weight: normal;
+}
+.word-popup li a {
+    font-weight: bold;
+    font-size: 16px;
+    padding: 0;
+    margin: 0;
+    margin-bottom: 10px;
+    color: rgb(209, 133, 61)!important;
+}
+.word-popup img {
+    position: relative;
+    margin-top: 10px;
+    width: 100%;
+}
+.word-popup img::after {  /* hide image broken icon */
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgb(250, 247, 242);	/* cover the broken icon with a #fff block*/
+    content: attr(alt);
+}
+/* width */
+::-webkit-scrollbar {
+    width: 0px;
+  }
+  
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 4px;
+}

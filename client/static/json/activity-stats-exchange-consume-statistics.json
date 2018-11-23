@@ -1,0 +1,86 @@
+[
+    {
+        "date": 1509243945679,
+        "dau": 54,
+        "apa": 10,
+        "server": 27,
+        "channel": 44,
+        "diamondConsume1_500": 65,
+        "diamondConsume501_1000": 77,
+        "diamondConsume1001_2000": 47,
+        "diamondConsume2001_5000": 61,
+        "diamondConsumeGt5000": 43
+    },
+    {
+        "date": 1509330345679,
+        "dau": 11,
+        "apa": 48,
+        "server": 43,
+        "channel": 46,
+        "diamondConsume1_500": 82,
+        "diamondConsume501_1000": 87,
+        "diamondConsume1001_2000": 34,
+        "diamondConsume2001_5000": 47,
+        "diamondConsumeGt5000": 18
+    },
+    {
+        "date": 1509416745679,
+        "dau": 68,
+        "apa": 53,
+        "server": 8,
+        "channel": 62,
+        "diamondConsume1_500": 26,
+        "diamondConsume501_1000": 49,
+        "diamondConsume1001_2000": 41,
+        "diamondConsume2001_5000": 23,
+        "diamondConsumeGt5000": 32
+    },
+    {
+        "date": 1509503145679,
+        "dau": 7,
+        "apa": 98,
+        "server": 27,
+        "channel": 8,
+        "diamondConsume1_500": 4,
+        "diamondConsume501_1000": 47,
+        "diamondConsume1001_2000": 35,
+        "diamondConsume2001_5000": 58,
+        "diamondConsumeGt5000": 87
+    },
+    {
+        "date": 1509589545679,
+        "dau": 46,
+        "apa": 9,
+        "server": 38,
+        "channel": 64,
+        "diamondConsume1_500": 86,
+        "diamondConsume501_1000": 18,
+        "diamondConsume1001_2000": 35,
+        "diamondConsume2001_5000": 16,
+        "diamondConsumeGt5000": 86
+    },
+    {
+        "date": 1509675945679,
+        "dau": 29,
+        "apa": 18,
+        "server": 71,
+        "channel": 65,
+        "diamondConsume1_500": 91,
+        "diamondConsume501_1000": 43,
+        "diamondConsume1001_2000": 89,
+        "diamondConsume2001_5000": 28,
+        "diamondConsumeGt5000": 15
+    },
+    {
+        "date": 1509762345679,
+        "dau": 7,
+        "apa": 56,
+        "server": 72,
+        "channel": 23,
+        "diamondConsume1_500": 57,
+        "diamondConsume501_1000": 69,
+        "diamondConsume1001_2000": 41,
+        "diamondConsume2001_5000": 53,
+        "diamondConsumeGt5000": 20
+    }
+]

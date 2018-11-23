@@ -1,0 +1,39 @@
+{
+	"name": "words-inspector",
+	"version": "0.0.1",
+	"manifest_version": 2,
+	"description": "a words inspector",
+	"icons": {
+		"16": "egg16.png",
+		"32": "egg32.png",
+		"128": "egg128.png"
+	},
+	"browser_action": {
+		"default_title": "words-inspector",
+		"default_icon": {
+			"16": "egg16.png",
+			"32": "egg32.png",
+			"128": "egg128.png"
+		},
+		"default_popup": "popup.html"
+	},
+	"background": {
+		"scripts": ["event.js"],
+		"persistent": false
+		
+	},
+	"content_scripts": [
+		{
+			"matches": ["http://*/*", "https://*/*"],
+			"js": ["jquery.js", "jquery.toast.js", "content.js"],
+			"css": ["jquery.toast.css", "content.css"]
+		}
+	],
+	"options_page": "options.html",
+	"permissions": [
+		"storage",
+		"tabs",
+		"http://*/*",
+		"https://*/*"
+	]
+}

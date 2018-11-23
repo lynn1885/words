@@ -1,0 +1,93 @@
+[
+    {
+        "date": 1509243945685,
+        "dau": 17,
+        "apa": 87,
+        "server": 24,
+        "channel": 21,
+        "ranking": 15,
+        "nickname": 85,
+        "serverId": 3,
+        "open10TimesTimes": 3,
+        "vipLv": 99,
+        "lv": 1
+    },
+    {
+        "date": 1509330345685,
+        "dau": 17,
+        "apa": 53,
+        "server": 98,
+        "channel": 14,
+        "ranking": 64,
+        "nickname": 83,
+        "serverId": 98,
+        "open10TimesTimes": 83,
+        "vipLv": 98,
+        "lv": 2
+    },
+    {
+        "date": 1509416745685,
+        "dau": 70,
+        "apa": 72,
+        "server": 64,
+        "channel": 71,
+        "ranking": 66,
+        "nickname": 49,
+        "serverId": 7,
+        "open10TimesTimes": 95,
+        "vipLv": 56,
+        "lv": 3
+    },
+    {
+        "date": 1509503145685,
+        "dau": 88,
+        "apa": 16,
+        "server": 70,
+        "channel": 43,
+        "ranking": 30,
+        "nickname": 33,
+        "serverId": 78,
+        "open10TimesTimes": 64,
+        "vipLv": 54,
+        "lv": 4
+    },
+    {
+        "date": 1509589545685,
+        "dau": 2,
+        "apa": 54,
+        "server": 82,
+        "channel": 67,
+        "ranking": 87,
+        "nickname": 96,
+        "serverId": 18,
+        "open10TimesTimes": 46,
+        "vipLv": 31,
+        "lv": 5
+    },
+    {
+        "date": 1509675945685,
+        "dau": 40,
+        "apa": 89,
+        "server": 5,
+        "channel": 72,
+        "ranking": 67,
+        "nickname": 33,
+        "serverId": 33,
+        "open10TimesTimes": 17,
+        "vipLv": 41,
+        "lv": 6
+    },
+    {
+        "date": 1509762345685,
+        "dau": 4,
+        "apa": 12,
+        "server": 68,
+        "channel": 91,
+        "ranking": 6,
+        "nickname": 56,
+        "serverId": 49,
+        "open10TimesTimes": 9,
+        "vipLv": 59,
+        "lv": 7
+    }
+]

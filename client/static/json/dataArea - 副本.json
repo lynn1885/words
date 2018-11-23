@@ -1,0 +1,34 @@
+{
+	"platform": [
+		{
+			"name": "安卓", 
+			"value": "android", 
+			"channel": [
+				{"name": "小米", "value": "xiaomi"},
+				{"name": "应用宝", "value": "yingyongbao"},
+				{"name": "豌豆荚", "value": "wandoujia"},
+				{"name": "google play", "value": "googleplay"}
+			], 
+			"server": [
+				{"name": "服务器1", "value": "s1"},
+				{"name": "服务器2", "value": "s2"},
+				{"name": "服务器3", "value": "s3"},
+				{"name": "服务器4", "value": "s4"},
+				{"name": "服务器5", "value": "s5"}
+			]
+		},{
+			"name": "ios", 
+			"value": "ios", 
+			"channel": [
+				{"name": "App Store", "value": "appstore"}
+			], 
+			"server": [
+				{"name": "服务器6", "value": "s6"},
+				{"name": "服务器7", "value": "s7"},
+				{"name": "服务器8", "value": "s8"},
+				{"name": "服务器9", "value": "s9"},
+				{"name": "服务器10", "value": "s10"}
+			]
+		}
+	]
+}
