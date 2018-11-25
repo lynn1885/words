@@ -58,9 +58,7 @@
 			
 			<el-table-column label="单词">
 				<template slot-scope="scope">
-					<div @mouseover="getImages(scope.row.word)" class="word-word">
-						<span>{{scope.row.word}}</span>
-					</div>
+					{{scope.row.word}}
 				</template>
 			</el-table-column>
 			
@@ -129,15 +127,6 @@
 			>
 			<img :src="imageModalSrc" style="width: 100%">
 		</el-dialog>
-
-		<!-- 图片窗口 -->
-		<iframe 
-			v-if="isShowImageCollection"
-			:src="'https://cn.bing.com/images/search?q=' + selectedImageWord + '&go=Search&qs=n&form=QBILPG&sp=-1&pq=multitude&sc=0-0'"
-			class="image-collection"
-			frameborder="0"
-			>
-		</iframe>
 		
 	</div>
 </template>
@@ -146,7 +135,6 @@
 	import $ from 'jquery';
 	import _ from 'lodash';
 	import * as wordsModel from "@/models/words.ts";
-	import config from "@/config.js";
 
 	export default {
 		name: "words-book",
@@ -164,7 +152,6 @@
 				selectedImageWord: '',	// 选中的, 要显示图片的单词
 				isShowDelWord: false,			// 是否显示删除单词
 				isShowImageModal: false,		// 是否显示图片模态框
-				isShowImageCollection: config.isShowImageCollection,	// 是否显示图片 iframe
 			};
 		},
 		methods: {
@@ -400,11 +387,6 @@
 				this.imageModalSrc = imgSrc;
 			},
 
-			// 获取图片
-			getImages (word) {
-				this.selectedImageWord = word;
-			},
-
 			// 跳转到背诵页面
 			gotoRecitation () {
 				this.$router.push('./recitation');
@@ -481,19 +463,6 @@
 			height: 100%;
 			.el-icon-close {
 				display: none;
-			}
-		}
-
-		.word-word {
-			position: absolute;
-			top: 0;	/* 让单词容器铺满单元格 */
-			bottom: 0;
-			width: 100%;
-			padding-left: 10px;
-			span {
-				position: absolute;
-				top: 50%;
-				transform: translateY(-50%);	/* 让单词垂直居中 */
 			}
 		}
 
@@ -587,17 +556,6 @@
 				background-color: #fff;	/* cover the broken icon with a #fff block*/
 				content: attr(alt);
 			}
-		}
-
-		// image collection
-		.image-collection {
-			position: fixed;
-			right: 0;
-			bottom: 0;
-			width: 400px;
-			height: 400px;
-			z-index: 200;
-			box-shadow: 0px 0px 20px 0px #ddd;
 		}
 	}
 </style>
