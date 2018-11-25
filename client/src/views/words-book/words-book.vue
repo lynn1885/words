@@ -594,10 +594,10 @@
 			position: fixed;
 			right: 0;
 			bottom: 0;
-			width: 360px;
+			width: 400px;
 			height: 400px;
 			z-index: 200;
-			box-shadow: 0px 0px 20px 0px #ccc;
+			box-shadow: 0px 0px 20px 0px #ddd;
 		}
 	}
 </style>
