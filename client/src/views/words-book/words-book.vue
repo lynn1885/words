@@ -2,7 +2,7 @@
 	<div id="words-book">
 		<div id="top-area">
 			<!-- 标题 -->
-			<h1>单词本 <span class="tips">{{lastWordsNum}} + {{allWordsNum - lastWordsNum}}</span></h1>
+			<div id="words-title">单词本 <span class="tips">{{lastWordsNum}} + {{allWordsNum - lastWordsNum}}</span></div>
 
 			<!-- 顶栏 -->
 			<div id="top-bar">
@@ -46,6 +46,10 @@
 					随机背诵
 				</el-button>
 			</div>
+		</div>
+
+		<!-- 词素分析 -->
+		<div id="morpheme" v-html="morphemeAnalyseRes">
 		</div>
 
 		<!-- 单词本 -->
@@ -106,6 +110,7 @@
 						<div class="youtube">
 							<a :href="'https://www.youtube.com/results?search_query=' + scope.row.word" target="blank">youtube</a>		
 						</div>
+						<div class="morpheme" @click="analyzeMorpheme(scope.row.word)">morpheme</div>
 					</div>
 				</template>
 			</el-table-column>
@@ -135,6 +140,7 @@
 	import $ from 'jquery';
 	import _ from 'lodash';
 	import * as wordsModel from "@/models/words.ts";
+	import morphemes from '@/utils/morphemes.js';
 
 	export default {
 		name: "words-book",
@@ -152,7 +158,16 @@
 				selectedImageWord: '',	// 选中的, 要显示图片的单词
 				isShowDelWord: false,			// 是否显示删除单词
 				isShowImageModal: false,		// 是否显示图片模态框
+				morphemeAnalyseRes: '词素分析',		// 词素分析结果
 			};
+		},
+		watch: {
+			curWords: {
+				deep: true,
+				handler (words) {
+					this.analyzeMorpheme(words[0]);
+				}
+			}
 		},
 		methods: {
 			// 获取单词列表
@@ -410,6 +425,32 @@
 				} else {
 					this.lastWordsNum = Number(localStorage.getItem('lastWordsNum'));
 				}
+			},
+
+			// 分析词素
+			analyzeMorpheme (word) {
+				this.morphemeAnalyseRes = '123';
+				let matchedRoots = '词根'
+				for (let root in morphemes.roots) {
+					if (word.includes(root)) {
+						matchedRoots += `<span class="morpheme-item">${root}: ${morphemes.roots[root]}</span>`
+					}
+				}
+				let matchedPrefixes = '<br>前缀'
+				for (let prefix in morphemes.prefixes) {
+					if (word.indexOf(prefix) === 0) {
+						matchedPrefixes += `<span class="morpheme-item">${prefix}: ${morphemes.prefixes[prefix]}</span>`
+					}
+				}
+				let matchedPostfixes = '<br>后缀'
+				for (let postfix in morphemes.postfixes) {
+					let index = word.lastIndexOf(postfix);
+					if (index > -1 && index === word.length - postfix.length) {
+						matchedPostfixes += `<span class="morpheme-item">${postfix}: ${morphemes.postfixes[postfix]}</span>`
+					}
+				}
+
+				this.morphemeAnalyseRes = matchedRoots + matchedPrefixes + matchedPostfixes
 			}
 		},
 		async mounted() {
@@ -421,6 +462,21 @@
 <style lang="scss">
 	#words-book {
 		margin-bottom: 50px;
+		&:after {
+			display: block;
+			content: " ";
+			clear: both;
+		}
+		
+		// 标题栏
+		#words-title {
+			text-align: center;
+			padding: 4px 0px;
+			font-size: 14px;
+			.tips {
+				color: #aaa;
+			}
+		}
 
 		// 顶部区域
 		#top-area {
@@ -428,7 +484,7 @@
 			top: 0px;
 			left: 0px;
 			width: 90%;
-			height: 110px;
+			height: 80px;
 			padding: 0 5%;
 			z-index: 10;
 			background: rgba(256, 256, 256, 0.94);
@@ -452,11 +508,40 @@
 				margin-left: 20px;
 			}
 		}
+		
+		// 词素分析 
+		#morpheme {
+			position: fixed;
+			width: 17%;
+			height: 100%;
+			top: 80px;
+			left: 0px;
+			background: rgba(256, 256, 256, 0.94);
+			padding: 4px 10px;
+			color: #999;
+			font-size: 13px;
+			overflow-y: auto;
+			box-shadow: 0px 10px 10px #ddd;
+			z-index: 50;
+			.morpheme-item {
+				display: block;
+				background: #f4f4f4;
+				border-radius: 4px;
+				margin: 4px 0px;
+				padding: 4px;
+				&:hover {
+					background: #eee;
+				}
+			}
+		}
 
+		// 单词书
 		#words {
-			width: 94%;
-			margin: 0 3%;
-			margin-top: 120px;
+			float: right;
+			width: 80%;
+			margin-top: 90px;
+			margin-right: 10px;
+			border-radius: 4px;
 		}
 
 		.word {
@@ -533,11 +618,10 @@
 				background: rgb(21, 158, 158);
 				color: #fff;
 			}
-		}
-
-		.tips {
-			color: #aaa;
-			font-size: 14px;
+			.morpheme:hover {
+				background: rgb(197, 192, 191);	
+				color: #fff;
+			}
 		}
 
 		.word-img-container {
