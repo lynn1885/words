@@ -2,8 +2,8 @@
 	<div id="words-book">
 		<div id="top-area">
 			<!-- 标题 -->
-			<div id="words-title">单词本 <span class="tips">{{lastWordsNum}} + {{allWordsNum - lastWordsNum}}</span></div>
-
+			<div id="words-title">单词本 <span class="tips">{{lastWordsNum}} + {{allWordsNum - lastWordsNum}} TO12.31: 2060</span></div>
+			
 			<!-- 顶栏 -->
 			<div id="top-bar">
 				<el-input 
@@ -48,8 +48,8 @@
 			</div>
 		</div>
 
-		<!-- 词素分析 -->
-		<div id="morpheme" v-html="morphemeAnalyseRes">
+		<!-- 侧边栏信息 -->
+		<div id="side-bar-info" v-html="sideBarInfo">
 		</div>
 
 		<!-- 单词本 -->
@@ -60,13 +60,13 @@
 			border
 			>
 			
-			<el-table-column label="单词">
+			<el-table-column label="单词" width="140">
 				<template slot-scope="scope">
 					{{scope.row.word}}
 				</template>
 			</el-table-column>
 			
-			<el-table-column label="音标">
+			<el-table-column label="音标" width="140">
 				<template slot-scope="scope">
 					<div v-for="(item, index) of scope.row.ps" :key="index" class="word-ps" @mouseover="playWordPron($event)">
 						{{'[' + item + ']' }}
@@ -100,7 +100,7 @@
 				</template>
 			</el-table-column>
 
-			<el-table-column label="操作">
+			<el-table-column label="操作"  width="100">
 				<template slot-scope="scope">
 					<div class="handle-bar">
 						<div class="delete" @click="delWord(scope.row.word, scope.row._id)">delete</div>
@@ -111,6 +111,7 @@
 							<a :href="'https://www.youtube.com/results?search_query=' + scope.row.word" target="blank">youtube</a>		
 						</div>
 						<div class="morpheme" @click="analyzeMorpheme(scope.row.word)">morpheme</div>
+						<div class="syllable" @click="analyzeSyllables(scope.row.ps)">syllable</div>
 					</div>
 				</template>
 			</el-table-column>
@@ -141,6 +142,7 @@
 	import _ from 'lodash';
 	import * as wordsModel from "@/models/words.ts";
 	import morphemes from '@/utils/morphemes.js';
+	import syllables from '@/utils/syllables.js';
 
 	export default {
 		name: "words-book",
@@ -158,7 +160,7 @@
 				selectedImageWord: '',	// 选中的, 要显示图片的单词
 				isShowDelWord: false,			// 是否显示删除单词
 				isShowImageModal: false,		// 是否显示图片模态框
-				morphemeAnalyseRes: '词素分析',		// 词素分析结果
+				sideBarInfo: '',		// 侧边栏信息
 			};
 		},
 		watch: {
@@ -429,28 +431,60 @@
 
 			// 分析词素
 			analyzeMorpheme (word) {
-				this.morphemeAnalyseRes = '123';
-				let matchedRoots = '词根'
+				this.sideBarInfo = '';
+				let matchedRoots = '<br/>词根<br/>'
 				for (let root in morphemes.roots) {
 					if (word.includes(root)) {
-						matchedRoots += `<span class="morpheme-item">${root}: ${morphemes.roots[root]}</span>`
+						matchedRoots += `<span class="side-bar-info-item">${root}: ${morphemes.roots[root]}</span>`
 					}
 				}
-				let matchedPrefixes = '<br>前缀'
+				let matchedPrefixes = '<br/>前缀<br/>'
 				for (let prefix in morphemes.prefixes) {
 					if (word.indexOf(prefix) === 0) {
-						matchedPrefixes += `<span class="morpheme-item">${prefix}: ${morphemes.prefixes[prefix]}</span>`
+						matchedPrefixes += `<span class="side-bar-info-item">${prefix}: ${morphemes.prefixes[prefix]}</span>`
 					}
 				}
-				let matchedPostfixes = '<br>后缀'
+				let matchedPostfixes = '<br/>后缀<br/>'
 				for (let postfix in morphemes.postfixes) {
 					let index = word.lastIndexOf(postfix);
 					if (index > -1 && index === word.length - postfix.length) {
-						matchedPostfixes += `<span class="morpheme-item">${postfix}: ${morphemes.postfixes[postfix]}</span>`
+						matchedPostfixes += `<span class="side-bar-info-item">${postfix}: ${morphemes.postfixes[postfix]}</span>`
 					}
 				}
 
-				this.morphemeAnalyseRes = matchedRoots + matchedPrefixes + matchedPostfixes
+				this.sideBarInfo = matchedRoots + matchedPrefixes + matchedPostfixes
+			},
+
+			// 分析音节
+			analyzeSyllables (phoneticSymbols) {
+				this.sideBarInfo = '';
+				let res = '';
+				let syllable;
+				let findedSyllables = [];
+				for (let ps of phoneticSymbols) {
+					for (let s in syllables) {
+						if (!findedSyllables.includes(s) && ps.includes(s)) {
+							findedSyllables.push(s);
+							syllable = syllables[s];
+							if (typeof syllable === 'string') {
+								let matchRes = syllable.match(/^{(.+)}$/);
+								if (matchRes && matchRes[1]) {
+									syllable = syllables[matchRes[1]]
+								}
+							}
+
+							if (typeof syllable === 'string') {
+								res += `<span class="side-bar-info-item">[${s}]</span> ${syllable}`
+							} else if (Array.isArray(syllable)) {
+								res += `<span class="side-bar-info-item">[${s}]</span> ${syllable.join('<br/>')}`;
+							}
+
+							res += '<br/><br/>'
+						}
+					}
+				}
+
+				this.sideBarInfo = res;
 			}
 		},
 		async mounted() {
@@ -509,23 +543,25 @@
 			}
 		}
 		
-		// 词素分析 
-		#morpheme {
+		// 侧边栏信息
+		#side-bar-info {
 			position: fixed;
-			width: 17%;
+			width: 16%;
 			height: 100%;
 			top: 80px;
 			left: 0px;
-			background: rgba(256, 256, 256, 0.94);
+			box-sizing: border-box;
 			padding: 4px 10px;
+			padding-bottom: 100px;	// 抵消上面的top: 80px
+			background: rgba(256, 256, 256, 0.94);
 			color: #999;
 			font-size: 13px;
 			overflow-y: auto;
 			box-shadow: 0px 10px 10px #ddd;
 			z-index: 50;
-			.morpheme-item {
+			.side-bar-info-item {
 				display: block;
-				background: #f4f4f4;
+				background: #f6f6f6;
 				border-radius: 4px;
 				margin: 4px 0px;
 				padding: 4px;
@@ -538,7 +574,7 @@
 		// 单词书
 		#words {
 			float: right;
-			width: 80%;
+			width: 81%;
 			margin-top: 90px;
 			margin-right: 10px;
 			border-radius: 4px;
@@ -556,7 +592,7 @@
 			background: #f4f4f4;
 			border-radius: 4px;
 			padding: 2px 4px;
-			margin: 0 4px;
+			margin: 2px 4px;
 			transition: all 0.2s;
 			color: #aaa;
 			font-size: 12px;
@@ -619,6 +655,10 @@
 				color: #fff;
 			}
 			.morpheme:hover {
+				background: rgb(197, 192, 191);	
+				color: #fff;
+			}
+			.syllable:hover {
 				background: rgb(197, 192, 191);	
 				color: #fff;
 			}

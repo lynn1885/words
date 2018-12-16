@@ -1,4 +1,3 @@
-// man: 'dwell, stay, 居住, 停留 || [manu]'
 export default {
   roots: {
     ag: 'do act 做, 动',
@@ -6,6 +5,7 @@ export default {
     agro: 'field, 田地, 农田',
     agr: 'field, 田地, 农田',
     ann: 'year, 年',
+    annu: 'year, 年', 
     enn: 'year, 年',
     audi: 'hear, 听',
     audit: 'hear, 听',
@@ -129,6 +129,7 @@ export default {
     sid: 'sit, 坐',
     sist: 'stand, 站立',
     son: 'sound, 声音',
+    spec: '看',
     spect: 'look, 看',
     spir: 'breathe, 呼吸',
     tail: 'cut, 切割',
@@ -361,7 +362,7 @@ export default {
     contra: '反对, 相反, 相对',
     cor: '共同, 相互 || 加强或引申意义',
     counter: '反对, 相对',
-    de: '否定, 非, 相反 || 除去, 取消, 毁',
+    de: '否定, 非, 相反 || 除去, 取消, 毁 || 离开 || 向下, 降低, 减少 || 使成..., 做成... || 表强调',
     deca: '十',
     deci: '十分之一',
     demi: '半',
@@ -379,12 +380,19 @@ export default {
     eu: '优, 善, 好',
     ex: '出, 外, 由...中弄出 || 前任的, 以前的 || 表示"使...", "做..."或加强意义',
     exo: '外部的',
+    per: '完全, 贯穿, 自始至终',
+    sym: '共同, 相同',
+    re: '往回, 向后 || 再, 重复, 重新'
   },
   postfixes: {
     aceous: 'a. 表示有...性质的, 属于...的, 如...的, 具有...的',
     acious: 'a. 表示多...的, 有...性质的, 属于...的, 具有...的',
     acity: 'n. 构成抽象名词, 表示性质, 状态, 情况. 与形容词后缀-acious相对应',
     acle: 'n. 构成实物名词即抽象名词',
+    al: 'a. 表示属于...的, 如...的, 具有...的 || n. 构成抽象名词, 表示行为, 状态, 事情. 表示人或物',
+    ance: 'n. 抽象名词',
+    ancy: 'n. 抽象名词',
+    ate: 'v. 表示做, 造成, 使之成...',
     ity: 'n. 名词后缀',
     ion: 'n',
     logy: 'n. 学科',
