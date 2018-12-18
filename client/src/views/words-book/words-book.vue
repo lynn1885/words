@@ -140,7 +140,9 @@
 <script>
 	import $ from 'jquery';
 	import _ from 'lodash';
+	import axios from 'axios';
 	import * as wordsModel from "@/models/words.ts";
+	import config from '@/config/config.js';
 	import morphemes from '@/utils/morphemes.js';
 	import syllables from '@/utils/syllables.js';
 
@@ -161,6 +163,7 @@
 				isShowDelWord: false,			// 是否显示删除单词
 				isShowImageModal: false,		// 是否显示图片模态框
 				sideBarInfo: '',		// 侧边栏信息
+				googleImagesClient: null,	// google images client
 			};
 		},
 		watch: {
@@ -429,7 +432,7 @@
 				}
 			},
 
-			// 分析词素
+			// 分析词素, 获取图片
 			analyzeMorpheme (word) {
 				this.sideBarInfo = '';
 				let matchedRoots = '<br/>词根<br/>'
@@ -452,7 +455,19 @@
 					}
 				}
 
-				this.sideBarInfo = matchedRoots + matchedPrefixes + matchedPostfixes
+				this.sideBarInfo = matchedRoots + matchedPrefixes + matchedPostfixes;
+
+				let imgs = '';
+				axios.get(`https://www.googleapis.com/customsearch/v1?q=${word}&searchType=image&cx=${encodeURI(config.googleSearchEngineId)}&key=${encodeURI(config.googleApiKey)}`)
+					.then(res => {
+						if (res.status === 200) {
+							for (let i of res.data.items) {
+								imgs += `<img class="related-images" src="${i.link}">`
+							}
+						}
+						this.sideBarInfo += imgs;
+					})
+		
 			},
 
 			// 分析音节
@@ -485,12 +500,14 @@
 				}
 
 				this.sideBarInfo = res;
-			}
+			},
+
 		},
 		async mounted() {
 			await this.updatePage();
 			this.recordWordsNum();
 		}
+		
 	};
 </script>
 <style lang="scss">
@@ -546,7 +563,7 @@
 		// 侧边栏信息
 		#side-bar-info {
 			position: fixed;
-			width: 16%;
+			width: 20%;
 			height: 100%;
 			top: 80px;
 			left: 0px;
@@ -569,12 +586,17 @@
 					background: #eee;
 				}
 			}
+			.related-images {
+				display: block;
+				margin-top: 20px;
+				width: 100%;
+			}
 		}
 
 		// 单词书
 		#words {
 			float: right;
-			width: 81%;
+			width: 78%;
 			margin-top: 90px;
 			margin-right: 10px;
 			border-radius: 4px;
