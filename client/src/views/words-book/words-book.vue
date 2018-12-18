@@ -118,8 +118,11 @@
 
 			<el-table-column prop="img" label="图片">
 				<template slot-scope="scope">
-					<div class="word-img-container" @click="showImageModal(`./static/imgs/words/${scope.row.word}.png`)">
-						<img :src="`./static/imgs/words/${scope.row.word}.png`">
+					<div class="word-img-container">
+						<img :src="`./static/imgs/words/${scope.row.word}.png`" @error="hideImageIcon($event)"  @click="showImageModal(`./static/imgs/words/${scope.row.word}.png`)">
+						<img :src="`./static/imgs/words/${scope.row.word}.jpg`" @error="hideImageIcon($event)"  @click="showImageModal(`./static/imgs/words/${scope.row.word}.jpg`)">
+						<img :src="`./static/imgs/words/${scope.row.word}.jpeg`" @error="hideImageIcon($event)"  @click="showImageModal(`./static/imgs/words/${scope.row.word}.jpeg`)">
+						<img :src="`./static/imgs/words/${scope.row.word}.gif`" @error="hideImageIcon($event)"  @click="showImageModal(`./static/imgs/words/${scope.row.word}.gif`)">
 					</div>
 				</template>
 			</el-table-column>
@@ -401,6 +404,11 @@
 				}, 0)
 			},
 
+			// 隐藏图片破损图标
+			hideImageIcon (e) {
+				e.target.style.display = 'none';
+			},
+
 			// 显示图片模态框
 			showImageModal (imgSrc) {
 				this.isShowImageModal = true;
@@ -432,7 +440,7 @@
 				}
 			},
 
-			// 分析词素, 获取图片
+			// 分析词素, 获取相关图片
 			analyzeMorpheme (word) {
 				this.sideBarInfo = '';
 				let matchedRoots = '<br/>词根<br/>'
@@ -690,17 +698,6 @@
 			width: 100%;
 			img {
 				width: 100%;
-				height: 100%;
-			}
-			img:after {  /* hide image broken icon */
-				display: block;
-				position: absolute;
-				top: 0;
-				left: 0;
-				width: 100%;
-				height: 100%;
-				background-color: #fff;	/* cover the broken icon with a #fff block*/
-				content: attr(alt);
 			}
 		}
 	}
