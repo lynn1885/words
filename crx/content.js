@@ -94,6 +94,8 @@ $(function () {
 							</ul>
 							<audio src="${wordInfo.pron[0]}" autoplay></audio>
 							<img src="${imgUrl}/${wordInfo.word}.png">
+							<img src="${imgUrl}/${wordInfo.word}.jpg">
+							<img src="${imgUrl}/${wordInfo.word}.gif">
 						</div>
 						`);
 						e.currentTarget.appendChild(popup[0]);
