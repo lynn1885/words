@@ -56,6 +56,7 @@
       v-if="curWordsInfo.length > 0" 
       :data="curWordsInfo" 
       @row-click="onTableRowClick"
+      @row-contextmenu="onTableRowRightClick"
       id="words"
       border>
       <el-table-column label="单词" width="120">
@@ -127,27 +128,9 @@
         <template slot-scope="scope">
           <div class="word-img-container">
             <img src=""
-              @error="loadWordImg($event, scope.row.word)"
+              @error="loadWordImg($event.target, scope.row.word)"
               @click="showImageModal(curWordsImgs[scope.row.word])"
             >
-            <!-- <img
-              :src="`${imgsServerUrl}/${scope.row.word}.png`"
-              @error="hideImageIcon($event)"
-              @load="showImage($event)"
-              @click="showImageModal(`${imgsServerUrl}/${scope.row.word}.png`)"
-            >
-            <img
-              :src="`${imgsServerUrl}/${scope.row.word}.jpg`"
-              @error="hideImageIcon($event)"
-              @load="showImage($event)"
-              @click="showImageModal(`${imgsServerUrl}/${scope.row.word}.jpg`)"
-            >
-            <img
-              :src="`${imgsServerUrl}/${scope.row.word}.gif`"
-              @error="hideImageIcon($event)"
-              @load="showImage($event)"
-              @click="showImageModal(`${imgsServerUrl}/${scope.row.word}.gif`)"
-            > -->
           </div>
         </template>
       </el-table-column>
@@ -176,8 +159,8 @@ export default {
   name: "words-book",
   data() {
     return {
-      newWord: "", // 添加新单词
-      findQuery: "", // 搜索的单词
+      newWord: '', // 添加新单词
+      findQuery: '', // 搜索的单词
       pageWordsNum: 30, // 每页多少个单词
       allWordsNum: 0, // 总共多少个单词
       lastWordsNum: 0, // 昨天背到多少单词
@@ -185,11 +168,12 @@ export default {
       curWords: [], // 当前单词
       curWordsInfo: [], // 当前单词及详细注释
       curWordsImgs: {}, // 当前单词图片
+      curSelectedRowWord: '', // 当前选中行对应的单词
       imgsServerUrl: config.imgsServerUrl,  // 图片服务器地址
-      imageModalSrc: "", // 模态框显示图片的url
+      imageModalSrc: '', // 模态框显示图片的url
       isShowDelWord: false, // 是否显示删除单词
 			isShowImageModal: false, // 是否显示图片模态框
-      sideBarInfo: "", // 侧边栏信息
+      sideBarInfo: '', // 侧边栏信息
       googleImagesClient: null, // google images client
       soundPickUp: './static/sounds/pick-up.mp3',
       soundClick: './static/sounds/click.wav',
@@ -242,15 +226,16 @@ export default {
 
         await wordsModel
           .search(word)
-          .then(res => {
+          .then(async res => {
             if (res.data.status === "new") {
               // this.$message({
               //   message: "添加单词成功",
               //   type: "success",
               // });
-              this.playAudio(this.soundPickUp);
+              // this.playAudio(this.soundPickUp);
               this.newWord = "";
-              this.updatePage();
+              await this.updatePage();
+              this.playAudio(res.data.wordInfo.pron[0]);
               this.analyzeMorpheme(word);
             } else if (res.data.status === "old") {
               this.$message({
@@ -416,20 +401,38 @@ export default {
       await this.getWordInfo(this.curWords);
     },
 
-    // 隐藏图片破损图标
-    hideImageIcon(e) {
-      e.target.style.display = "none";
-    },
+    // 加载单词图片
+    async loadWordImg(img, word) {
+      let imgTester = new Image();
+      let ifFinded = false;
+      for (let f of this.supportedWordImgFormats) {
+        await new Promise((resolve, reject) => {
+          imgTester.src = `${this.imgsServerUrl}/${word}.${f}`;
+          imgTester.onerror = function (e) {
+            reject(f);
+          }
+          imgTester.onload = function (e) {
+            resolve(f);
+          }
+        })
+          .then(f => {
+            img.src = `${this.imgsServerUrl}/${word}.${f}`;
+            this.curWordsImgs[word] = img.src;
+            ifFinded = true;
+          })
+          .catch(e => {
 
-    // 显示图片
-    showImage(e) {
-      e.target.style.display = "block";
+          })
+        if (ifFinded) {
+          break;
+        }
+      }
     },
 
     // 显示图片模态框
     showImageModal(imgSrc) {
-      this.isShowImageModal = true;
       this.imageModalSrc = imgSrc;
+      this.isShowImageModal = true;
     },
 
     // 跳转到背诵页面
@@ -528,7 +531,7 @@ export default {
 					})
 					.catch(e => {
 						imgs = `<iframe class="related-images-iframe" src="https://cn.bing.com/images/search?q=${word}&go=Search&qs=n&form=QBILPG&sp=-1&pq=multitude&sc=0-0" frameborder="0"></iframe>`;
-						console.warn("你今天的免费图片搜索次数可能已经用尽, 或请求超时: ", e);
+						// console.warn("你今天的免费图片搜索次数可能已经用尽, 或请求超时: ", e);
 					});
 				localStorage.setItem("imgsCache", JSON.stringify(imgsCache));
 			}
@@ -571,36 +574,18 @@ export default {
     },
 
     // 当表格行被点击时
-    onTableRowClick(row) {
-      this.analyzeMorpheme(row.word);
+    onTableRowClick(row, e) {
+      if (row.word !== this.curSelectedRowWord) {
+        this.curSelectedRowWord = row.word;
+        this.analyzeMorpheme(row.word);
+      }
     },
 
-    // 加载单词图片
-    async loadWordImg(e, word) {
-      let imgTester = new Image();
-      let ifFinded = false;
-      for (let f of this.supportedWordImgFormats) {
-        await new Promise((resolve, reject) => {
-          imgTester.src = `${this.imgsServerUrl}/${word}.${f}`;
-          imgTester.onerror = function (e) {
-            reject(f);
-          }
-          imgTester.onload = function (e) {
-            resolve(f);
-          }
-        })
-          .then(f => {
-            e.target.src = `${this.imgsServerUrl}/${word}.${f}`;
-            this.curWordsImgs[word] = e.target.src;
-            ifFinded = true;
-          })
-          .catch(e => {
-
-          })
-        if (ifFinded) {
-          break;
-        }
-      }
+    // 当表格行被右击时 
+    async onTableRowRightClick (row, e) {
+      e.preventDefault();
+      await this.updatePage();
+      $(`td:contains(${row.word})`)[0].scrollIntoView({behavior: 'instant', block: 'center', inline: 'center'});  // 模拟刷新当前行效果
     }
   },
   async mounted() {
@@ -711,13 +696,6 @@ export default {
     margin-top: 90px;
     margin-right: 10px;
     border-radius: 4px;
-  }
-
-  .word {
-    height: 100%;
-    .el-icon-close {
-      display: none;
-    }
   }
 
   .word-ps {

@@ -50,7 +50,7 @@
 		</div>
 
     <!-- 下一个 -->
-		<div id="next-word" @click="randomWord">下一个</div>
+		<div id="next-word" @click="randomWord" ref="next-word">下一个</div>
 	</div>
 </template>
 
@@ -179,8 +179,18 @@ export default {
     showImage (e) {
       e.target.style.display = 'block';
     },
+
+    // 快捷键
+    setShortcut () {
+      $(document.body).on('keydown', e => {
+        if (e.keyCode === 32) {
+          $(this.$refs['next-word']).trigger('click')
+        }
+      })
+    }
   },
   async mounted() {
+    this.setShortcut();
     await this.getWordList(0, 20000);
     this.calWordUnits(this.wordList);
     this.setCurWordUnit();  // 不传参, 则默认设置所有单词为当前unit
@@ -196,6 +206,8 @@ export default {
   width: 100%;
   height: 50px;
   line-height: 50px;
+  padding: 0px 60px;
+  box-sizing: border-box;
   background: rgba(256, 256, 256, 0.94);
   box-shadow: 0px 0px 10px #ddd;
   z-index: 100;

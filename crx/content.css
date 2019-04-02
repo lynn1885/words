@@ -1,4 +1,4 @@
-div.word-match {
+.word-match {
     display: inline-block;
     position: relative;
     background: rgb(245, 239, 224);
@@ -6,6 +6,7 @@ div.word-match {
     margin: 0px 1px;
     padding: 2px 3px;
     border-radius: 4px;
+    font-style: normal;
 }
 
 .word-popup {

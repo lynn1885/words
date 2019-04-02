@@ -8,6 +8,8 @@ client/static/imgs/words
 client/dist
 db
 imgs
+sounds
+tools
 server/node_modules
 start-client.bat
 start-db.bat

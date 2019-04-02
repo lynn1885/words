@@ -1,11 +1,12 @@
 $(function () {
 	// config
-	const wordLength = 4;
+	const minWordLength = 3;
+	const maxHandleWordsNum = 5000;
 	const matchWordsClass = 'word-match';	// remeber to modify the classname in css, if you modify this.
 	const wordPopupClass = 'word-popup'
 	const listUrl = 'http://localhost:9000/words/list';
 	const findUrl = 'http://localhost:9000/words/find?query={"dsl": {"word": "$WORD"}, "exact": true}';
-	const imgUrl = 'http://localhost:9001/static/imgs/words';
+	const imgUrl = 'http://localhost:9999';
 	const errorToastCfg = {
 		loader: false,
 		showHideTransition: 'slide',
@@ -40,28 +41,33 @@ $(function () {
 	})
 	
 	// run: render page
-	function run (words) {
+	async function run (words) {
+		let wordsNum = 0;
 		// find words and wrap
 		let allEls = $('*');
-		for (let i=0; i<allEls.length; i++) {
+		for (let i=0; i<allEls.length && wordsNum<=maxHandleWordsNum; i++) {
 			let curEl = allEls[i];
 			if (curEl.childNodes.length > 0 &&
 				curEl.nodeName !== 'SCRIPT' &&
 				curEl.nodeName !== 'STYLE' &&
-				curEl.nodeName !== 'NOSCRIPT'	
+				curEl.nodeName !== 'NOSCRIPT'	&&
+				curEl.nodeName !== 'SVG'
 			) {
-				for (let j=0; j<curEl.childNodes.length; j++) {
+				for (let j=0; j<curEl.childNodes.length && wordsNum<=maxHandleWordsNum; j++) {
 					let curNode = curEl.childNodes[j];
-					if (curNode.nodeType === Node.TEXT_NODE && curNode.nodeValue.length >= wordLength) {
+					if (curNode.nodeType === Node.TEXT_NODE && curNode.nodeValue.length >= minWordLength) {
 						splitTextNode(curNode);
+						// await sleep(5);
 						function splitTextNode (textNode) {
+							wordsNum ++;
+							if (wordsNum >= maxHandleWordsNum) return;
 							let index = textNode.nodeValue.search(/[a-zA-Z](,|\.|\s+)/);
 							if (index > 0) {
 								let restTextNode = textNode.splitText(index+1);
 								let curTextNodeStartIndex = restTextNode.previousSibling.nodeValue.search(/[a-zA-Z]/);
 								let curTextNode = restTextNode.previousSibling.splitText(curTextNodeStartIndex);
 								wrapWord(curNode, words);								
-								if (restTextNode.nodeValue && restTextNode.nodeValue.length >= wordLength) {
+								if (restTextNode.nodeValue && restTextNode.nodeValue.length >= minWordLength) {
 									splitTextNode(restTextNode);
 								}
 							} else {
@@ -113,10 +119,19 @@ $(function () {
 	// wrap Word
 	function wrapWord (textNode, words) {
 		let word = textNode.nodeValue;
-		if (word.length >= wordLength) {
+		if (word.length >= minWordLength) {
 			if (words.includes(word.toLowerCase())) {
-				$(textNode).wrap(`<div class="${matchWordsClass}"></div>`)
+				$(textNode).wrap(`<i class="${matchWordsClass}"></i>`)
 			}
 		}
 	}
+
+	// sleep
+  async function sleep (ms) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve();
+      }, ms);
+    })
+  }
 })
