@@ -1,5 +1,6 @@
 export default {
   roots: {
+    ac: `尖. 具体含有下列四种意义： （1）尖形→针、刺 （2）烈（尖）味→酸、辣、苦 （3）尖顶→顶上、高 （4）尖锐→敏锐`,
     ag: 'do act 做, 动',
     agri: 'field, 田地, 农田',
     agro: 'field, 田地, 农田',
@@ -234,6 +235,7 @@ export default {
     integr: '整, 全',
     junct: '连接, 连结',
     later: '边',
+    let: '小，微小',
     legis: '法',
     luc: '光',
     lumin: '光',
@@ -387,7 +389,7 @@ export default {
     per: '完全, 贯穿, 自始至终',
     sym: '共同, 相同',
     re: '往回, 向后 || 再, 重复, 重新',
-    pro: '向前',
+    pro: '向前'
   },
   postfixes: {
     aceous: 'a. 表示有...性质的, 属于...的, 如...的, 具有...的',
@@ -404,6 +406,7 @@ export default {
     ity: 'n. 名词后缀',
     ion: 'n',
     logy: 'n. 学科',
+    tary: '自己总结, 一般的形容词后缀',
     ry: 'n. 名词'
   }
 }

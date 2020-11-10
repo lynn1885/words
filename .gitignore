@@ -14,6 +14,9 @@ server/node_modules
 start-client.bat
 start-db.bat
 start-server.bat
+start-imgs-server.bat
+start-audios-server.bat
+start-mv-audio.bat
 words.bat
 
 # local env files

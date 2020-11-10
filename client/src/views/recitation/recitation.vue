@@ -2,6 +2,7 @@
 	<div id="recitation">
 		<!-- 顶栏 -->
 		<div id="top-bar">
+      <span @click="gotoWordsBook" style="cursor:pointer">back</span>
       <span class="word-count">
         {{wordCount}}/{{curWordUnit.length}}
       </span>

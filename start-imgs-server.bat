@@ -1,3 +1,3 @@
 E:
-cd \words\imgs
+cd \languages\imgs
 http-server -p 9999 -s
