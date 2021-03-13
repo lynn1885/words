@@ -43,14 +43,14 @@
       <!-- 单词总数 -->
       <div class="words-num">num: {{allWordsNum}}</div>
       <!-- 进度条 -->
-      <div class="progress">today: +{{allWordsNum - lastWordsNum}}</div>
+      <div class="progress">{{hasRemWordsNum}}, {{(hasRemWordsNum / allWordsNum * 100).toFixed(2)}}% </div>
       <!-- 显隐列 -->
       <div class="show-columns">
-        <el-checkbox-button class="show-column show-left" border v-model="showColumns.left">左侧</el-checkbox-button>
-        <el-checkbox-button class="show-column show-word" border v-model="showColumns.word">单词</el-checkbox-button>
-        <el-checkbox-button class="show-column show-meaning" border v-model="showColumns.meaning">含义</el-checkbox-button>
-        <el-checkbox-button class="show-column show-meaning" border v-model="showColumns.rem">记忆</el-checkbox-button>
-        <el-checkbox-button class="show-column show-img" border v-model="showColumns.img">图片</el-checkbox-button>
+        <el-checkbox-button class="show-column show-left" border v-model="showColumns.left">左</el-checkbox-button>
+        <el-checkbox-button class="show-column show-word" border v-model="showColumns.word">词</el-checkbox-button>
+        <el-checkbox-button class="show-column show-meaning" border v-model="showColumns.meaning">义</el-checkbox-button>
+        <el-checkbox-button class="show-column show-meaning" border v-model="showColumns.rem">记</el-checkbox-button>
+        <el-checkbox-button class="show-column show-img" border v-model="showColumns.img">图</el-checkbox-button>
       </div>
 
       <!-- 随机背诵 -->
@@ -78,19 +78,21 @@
           <span v-show="showColumns.word">
             {{scope.row.word}}
           </span>
-          <el-input v-show="!showColumns.word" size="small" @input="(e) => checkWord(e, scope.row.word)" :placeholder="scope.row.word.slice(0,1)"></el-input>
+          <el-input tabindex="1" size="small" @input="(e) => checkWord(e, scope.row.word)" :placeholder="scope.row.word && scope.row.word.slice(0,1)"></el-input>
         </template>
       </el-table-column>
 
       <el-table-column label="音标" width="140px">
         <template slot-scope="scope">
-          <div
-            v-for="(item, index) of scope.row.ps"
-            :key="index"
-            class="word-ps"
-            @mouseover="playAudio(scope.row.pron[index])"
-            @click="playAudio(scope.row.pron[index])"
-          >{{'[' + item + ']' }}</div>
+          <div v-show="showColumns.word">
+            <div
+              v-for="(item, index) of scope.row.ps"
+              :key="index"
+              class="word-ps"
+              @mouseover="playAudio(scope.row.pron[index])"
+              @click="playAudio(scope.row.pron[index])"
+            >{{'[' + item + ']' }}</div>
+          </div>
         </template>
       </el-table-column>
 
@@ -106,7 +108,7 @@
               {{' ' + scope.row.acceptation[index]}}
             </div>
           </div>
-          <el-input v-show="!showColumns.meaning" size="small" @input="(e) => checkMeaning(e, scope.row.acceptation)" :placeholder="scope.row.acceptation[0].slice(0,1)"></el-input>
+          <el-input v-show="!showColumns.meaning" size="small" @input="(e) => checkMeaning(e, scope.row.acceptation)" :placeholder="scope.row.acceptation[0] && scope.row.acceptation[0].slice(0,1)"></el-input>
 
         </template>
       </el-table-column>
@@ -134,7 +136,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="操作" width="100px">
+      <el-table-column label="操作" width="96px">
         <template slot-scope="scope">
           <div class="handle-bar">
             <div class="delete" @click="delWord(scope.row.word, scope.row._id)">delete</div>
@@ -198,6 +200,7 @@ export default {
       findQuery: '', // 搜索的单词
       pageWordsNum: 30, // 每页多少个单词
       allWordsNum: 0, // 总共多少个单词
+      hasRemWordsNum: 0, // 带有记忆方法的单词个数
       lastWordsNum: 0, // 昨天背到多少单词
       curPage: 1, // 当前页码
       curWords: [], // 当前单词
@@ -718,6 +721,12 @@ export default {
     //     }, 1000);
     //   }).catch(err => {console.log(err)})
     // }
+
+    await wordsModel
+      .list(1, 99999)
+      .then(res => {
+        this.hasRemWordsNum = res.data.words.length
+      })
   }
 }
 </script>
