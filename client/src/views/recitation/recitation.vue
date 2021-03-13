@@ -3,8 +3,12 @@
     <!-- 顶栏 -->
     <div id="top-bar">
       <span @click="gotoWordsBook" class="top-bar-btn">←</span>
-      <span @click="changeReciteMode" class="top-bar-btn">m</span>
-      <span class="word-count"> {{ wordCount }}/{{ curWordUnit.length }} </span>
+      <span @click="changeReciteMode" class="top-bar-btn">mode</span>
+      <span class="word-count">
+        {{ wordCount }}/{{ curWordUnit.length }},
+        {{(wordCount / curWordUnit.length * 100).toFixed(2)}}% |
+        {{Math.floor((reciteTime / 60)) }} m {{reciteTime % 60}} s
+      </span>
       <div
         class="word-unit"
         v-for="(unit, index) of wordUnits"
@@ -114,7 +118,9 @@ export default {
       curWordUnit: [], // 当前单词单元
       curWordUnitCache: [], // 当前单词单元副本, 供randomWord消费
       isShowAnswer: false, // 是否展示答案
-      isNewWordUnitSetted: false // 是否新设置了单词单元
+      isNewWordUnitSetted: false, // 是否新设置了单词单元
+      reciteTime: 0, // 背诵了多长时间了
+      reciteTimer: null // 背诵时间计时器
     }
   },
   watch: {
@@ -240,6 +246,13 @@ export default {
     await this.getWordList(0, 20000)
     this.calWordUnits(this.wordList)
     this.setCurWordUnit() // 不传参, 则默认设置所有单词为当前unit
+    this.reciteTimer = setInterval(() => {
+      this.reciteTime += 1
+    }, 1000)
+  },
+
+  beforeDestroy () {
+    clearInterval(this.reciteTimer)
   }
 }
 </script>
@@ -252,7 +265,7 @@ export default {
   width: 100%;
   height: 50px;
   line-height: 50px;
-  padding: 0px 100px;
+  padding: 0px 200px 0px 60px;
   box-sizing: border-box;
   background: rgba(256, 256, 256, 0.94);
   box-shadow: 0px 0px 10px #ddd;
