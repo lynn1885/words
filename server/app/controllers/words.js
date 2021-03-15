@@ -225,3 +225,58 @@ exports.list = async function (req, res) {
 
 	res.send(listRes);
 }
+
+// listrem, 复制的list
+exports.listrem = async function (req, res) {
+	let listRes = {
+		count: 0,
+		words: []
+	};
+	
+	// count
+	await Words.count({}, (err, count) => {
+		if (err) {
+			let errInfo = {
+				msg: 'Words list, 获取count失败',
+				err
+			}
+			console.error(errInfo);
+			res.status(500).send(errInfo);	
+		} else {
+			listRes.count = count;
+		}
+	});
+
+	// words
+	let from = Number(req.query.from);
+	let size = Number(req.query.size);
+	let order = req.query.order || 'desc';
+	let sortBy = req.query.sortBy || 'meta.createAt';
+	let orderSupport = ['desc', 'asc'];
+	let sortBySupport = ['meta.createAt', 'meta.updateAt'];
+	if (!_.isNumber(from) || _.isNaN(from) || !_.isNumber(size) && _.isNaN(size)) {
+		res.status(500).send({msg: 'Words list, from 或 size无法被转化为数字', error: 'error', from, size});	
+		return;
+	}
+	if (!orderSupport.includes(order) || !sortBySupport.includes(sortBy)) {
+		res.status(500).send({msg: 'Words list, 不支持的order或sortBy', order, sortBy, orderSupport, sortBySupport});	
+		return;
+	}
+	
+	await Words.listrem({from, size, order, sortBy})
+		.then (res => {
+			for (let wordObj of res) {
+				listRes.words.push(wordObj.word);
+			}
+		})
+		.catch (err => {
+			let errInfo = {
+				msg: 'Words list, 获取words list失败',
+				err
+			}
+			console.error(errInfo);
+			res.status(500).send(errInfo);			
+		})
+
+	res.send(listRes);
+}

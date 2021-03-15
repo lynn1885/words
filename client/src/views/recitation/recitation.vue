@@ -146,7 +146,8 @@ export default {
 
       if (this.curWordUnitCache.length > 0) {
         this.wordCount++
-        let wordIndex = _.random(0, this.curWordUnitCache.length - 1)
+        // let wordIndex = this.wordCount // get next word by index
+        let wordIndex = _.random(0, this.curWordUnitCache.length - 1) // get next word by random
         let word = this.curWordUnitCache[wordIndex]
         this.curWordUnitCache = this.curWordUnitCache.filter(
           (item, index) => index !== wordIndex
@@ -163,7 +164,7 @@ export default {
     // 获取单词列表
     async getWordList (from, size) {
       await wordsModel
-        .list(from, size)
+        .listrem(from, size)
         .then(res => {
           this.wordList = res.data.words.reverse()
         })

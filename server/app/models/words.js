@@ -98,6 +98,16 @@ WordsSchema.static('fecth', async function (word) {
 // list
 // only return words that have the "rem" attribute
 WordsSchema.static('list', async function ({from, size, order, sortBy}) {
+	return await this.find(null, {'word': true})
+		.sort({[sortBy]: order})
+		.skip(from)
+		.limit(size)
+		.exec()
+})
+
+// listrem
+// only return words that have the "rem" attribute
+WordsSchema.static('listrem', async function ({from, size, order, sortBy}) {
 	return await this.find({
 		rem: {$exists:true}
 	}, {'word': true})

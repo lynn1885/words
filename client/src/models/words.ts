@@ -5,7 +5,7 @@ import config from '../config/config.js'
 const apiUrl: string = config.backEndUrl + '/words';
 
 // search
-export function search (word: string): Promise<any> {
+export function search(word: string): Promise<any> {
     let url: string = apiUrl + '/search';
     return axios.get(url + '/' + word);
 }
@@ -15,7 +15,7 @@ interface FindQuery {
     dsl: object,
     mutiple?: boolean
 };
-export function find (query: FindQuery): Promise<any> {
+export function find(query: FindQuery): Promise<any> {
     let url: string = apiUrl + '/find';
     return axios.get(url, {
         params: {
@@ -25,7 +25,7 @@ export function find (query: FindQuery): Promise<any> {
 }
 
 // update
-export function update (word: string, updateContent: object): Promise<any> {
+export function update(word: string, updateContent: object): Promise<any> {
     let url: string = apiUrl + '/update/' + word;
     return axios.post(url, updateContent, {
         headers: {
@@ -35,7 +35,7 @@ export function update (word: string, updateContent: object): Promise<any> {
 }
 
 // delete
-export function del (id: string, token: string, word?: string): Promise<any> {
+export function del(id: string, token: string, word?: string): Promise<any> {
     let url: string = apiUrl + '/delete/' + id;
     return axios.delete(url, {
         params: {
@@ -46,8 +46,19 @@ export function del (id: string, token: string, word?: string): Promise<any> {
 }
 
 // list
-export function list (from: number, size: number, sortBy?: string, order?: string): Promise<any> {
+export function list(from: number, size: number, sortBy?: string, order?: string): Promise<any> {
     let url: string = apiUrl + '/list';
+    return axios.get(url, {
+        params: {
+            from,
+            size
+        }
+    });
+}
+
+// list rem
+export function listrem(from: number, size: number, sortBy?: string, order?: string): Promise<any> {
+    let url: string = apiUrl + '/listrem';
     return axios.get(url, {
         params: {
             from,

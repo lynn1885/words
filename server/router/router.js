@@ -14,5 +14,6 @@ router.get('/words/find/', Words.find);
 router.post('/words/update/:word', Words.update);
 router.delete('/words/delete/:id', Words.delete);
 router.get('/words/list', Words.list);
+router.get('/words/listrem', Words.listrem);
 
 module.exports = router;

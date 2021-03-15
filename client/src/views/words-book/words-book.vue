@@ -42,8 +42,6 @@
       ></el-pagination>
       <!-- 单词总数 -->
       <div class="words-num">num: {{allWordsNum}}</div>
-      <!-- 进度条 -->
-      <div class="progress">{{hasRemWordsNum}}, {{(hasRemWordsNum / allWordsNum * 100).toFixed(2)}}% </div>
       <!-- 显隐列 -->
       <div class="show-columns">
         <el-checkbox-button class="show-column show-left" border v-model="showColumns.left">左</el-checkbox-button>
@@ -200,7 +198,6 @@ export default {
       findQuery: '', // 搜索的单词
       pageWordsNum: 30, // 每页多少个单词
       allWordsNum: 0, // 总共多少个单词
-      hasRemWordsNum: 0, // 带有记忆方法的单词个数
       lastWordsNum: 0, // 昨天背到多少单词
       curPage: 1, // 当前页码
       curWords: [], // 当前单词
@@ -239,6 +236,7 @@ export default {
         })
         // eslint-disable-next-line handle-callback-err
         .catch(err => {
+          console.error(err)
           throw new Error('words.vue 获取单词列表失败' + from + size)
         })
     },
@@ -721,12 +719,6 @@ export default {
     //     }, 1000);
     //   }).catch(err => {console.log(err)})
     // }
-
-    await wordsModel
-      .list(1, 99999)
-      .then(res => {
-        this.hasRemWordsNum = res.data.words.length
-      })
   }
 }
 </script>
