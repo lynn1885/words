@@ -4,6 +4,7 @@
     <div id="top-bar">
       <span @click="gotoWordsBook" class="top-bar-btn">←</span>
       <span @click="changeReciteMode" class="top-bar-btn">mode</span>
+      <span @click="toggleAutoRecite" class="top-bar-btn">auto</span>
       <span class="word-count">
         {{ wordCount }}/{{ curWordUnit.length }},
         {{(wordCount / curWordUnit.length * 100).toFixed(2)}}% |
@@ -21,7 +22,7 @@
     </div>
 
     <!-- 图片 -->
-    <div id="related-images" v-if="curWordInfo">
+    <div id="related-images" v-if="curWordInfo && !autoReciteTimer">
       <iframe
         v-show="isShowAnswer"
         :src="
@@ -35,62 +36,70 @@
 
     <!-- 单词卡 -->
     <div id="word-card" v-if="curWordInfo">
-      <h1 id="word" class="word-info-item" v-if="reciteMode === 'word'">{{ curWordInfo.word }}</h1>
+      <h1 id="word" class="word-info-item" v-if="reciteMode === 'word' && !autoReciteTimer">{{ curWordInfo.word }}</h1>
       <h1 id="word" class="word-info-item" v-if="reciteMode === 'acceptation'">{{ curWordInfo.acceptation.join(' ') }}</h1>
 
-      <div id="word-word" v-show="isShowAnswer">{{ curWordInfo.word }}</div>
+      <h1 id="word" class="word-info-item" v-if="isShowAnswer && autoReciteTimer">
+        {{ curWordInfo.word }}
+        <br>
+        {{ curWordInfo.acceptation.join(' ').split(/；|，/)[0].replace(/(（.+）)|(\[.+\])|(\<.+\>)/, '') }}
+      </h1>
 
-      <div id="word-pron" class="word-info-item" v-show="isShowAnswer">
-        <div
-          v-for="(item, index) of curWordInfo.ps"
-          :key="index"
-          class="word-ps"
-          @mouseover="playWordPron($event)"
-        >
-          {{ '[' + item + ']' }}
-          <audio
-            :src="curWordInfo.pron[index]"
-            controls
-            @click="playWordPron"
-          ></audio>
+      <div v-show="!autoReciteTimer">
+        <div id="word-word" v-show="isShowAnswer">{{ curWordInfo.word }}</div>
+        <div id="word-pron" class="word-info-item" v-show="isShowAnswer">
+          <div
+            v-for="(item, index) of curWordInfo.ps"
+            :key="index"
+            class="word-ps"
+            @mouseover="playWordPron($event)"
+          >
+            {{ '[' + item + ']' }}
+            <audio
+              :src="curWordInfo.pron[index]"
+              controls
+              @click="playWordPron"
+            ></audio>
+          </div>
+        </div>
+
+        <div id="word-acceptation" class="word-info-item" v-show="isShowAnswer">
+          <div
+            v-for="(item, index) of curWordInfo.pos"
+            :key="'acceptation' + index"
+            class="word-acceptation"
+          >
+            <span class="pos">{{ item }}</span>
+            {{ ' ' + curWordInfo.acceptation[index] }}
+          </div>
+
+        </div>
+
+        <pre id="word-rem" class="word-info-item" v-show="isShowAnswer">{{
+          curWordInfo.rem
+        }}</pre>
+
+        <div id="word-img" class="word-info-item" v-show="isShowAnswer">
+          <div class="word-img-container">
+            <img
+              :src="`${imgsServerUrl}/${curWordInfo.word}.png`"
+              @load="showImage($event)"
+              @error="hideImageIcon($event)"
+            />
+            <img
+              :src="`${imgsServerUrl}/${curWordInfo.word}.jpg`"
+              @load="showImage($event)"
+              @error="hideImageIcon($event)"
+            />
+            <img
+              :src="`${imgsServerUrl}/${curWordInfo.word}.gif`"
+              @load="showImage($event)"
+              @error="hideImageIcon($event)"
+            />
+          </div>
         </div>
       </div>
 
-      <div id="word-acceptation" class="word-info-item" v-show="isShowAnswer">
-        <div
-          v-for="(item, index) of curWordInfo.pos"
-          :key="'acceptation' + index"
-          class="word-acceptation"
-        >
-          <span class="pos">{{ item }}</span>
-          {{ ' ' + curWordInfo.acceptation[index] }}
-        </div>
-
-      </div>
-
-      <pre id="word-rem" class="word-info-item" v-show="isShowAnswer">{{
-        curWordInfo.rem
-      }}</pre>
-
-      <div id="word-img" class="word-info-item" v-show="isShowAnswer">
-        <div class="word-img-container">
-          <img
-            :src="`${imgsServerUrl}/${curWordInfo.word}.png`"
-            @load="showImage($event)"
-            @error="hideImageIcon($event)"
-          />
-          <img
-            :src="`${imgsServerUrl}/${curWordInfo.word}.jpg`"
-            @load="showImage($event)"
-            @error="hideImageIcon($event)"
-          />
-          <img
-            :src="`${imgsServerUrl}/${curWordInfo.word}.gif`"
-            @load="showImage($event)"
-            @error="hideImageIcon($event)"
-          />
-        </div>
-      </div>
     </div>
 
     <!-- 下一个 -->
@@ -120,7 +129,8 @@ export default {
       isShowAnswer: false, // 是否展示答案
       isNewWordUnitSetted: false, // 是否新设置了单词单元
       reciteTime: 0, // 背诵了多长时间了
-      reciteTimer: null // 背诵时间计时器
+      reciteTimer: null, // 背诵时间计时器,
+      autoReciteTimer: null // 自动背诵时钟
     }
   },
   watch: {
@@ -138,7 +148,10 @@ export default {
         this.isShowAnswer = false
       } else if (!this.isShowAnswer) {
         this.isShowAnswer = true
-        $('audio')[0].play()
+        let audio = $('audio')[0]
+        if (this.autoReciteTimer) audio.playbackRate = 2.5
+        else audio.playbackRate = 1
+        audio.play()
         return
       } else {
         this.isShowAnswer = false
@@ -209,7 +222,8 @@ export default {
 
     // 播放单词读音
     playWordPron (e) {
-      $('audio', e.currentTarget)[0].play()
+      let audio = $('audio', e.currentTarget)[0]
+      audio.play()
     },
 
     // 跳转到单词本页面
@@ -240,6 +254,18 @@ export default {
     changeReciteMode () {
       if (this.reciteMode === 'word') this.reciteMode = 'acceptation'
       else this.reciteMode = 'word'
+    },
+
+    // 切换自动背诵
+    toggleAutoRecite () {
+      if (!this.autoReciteTimer) {
+        this.autoReciteTimer = setInterval(() => {
+          $(this.$refs['next-word']).trigger('click')
+        }, 200)
+      } else {
+        clearInterval(this.autoReciteTimer)
+        this.autoReciteTimer = null
+      }
     }
   },
   async mounted () {
