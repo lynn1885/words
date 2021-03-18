@@ -22,7 +22,7 @@
     </div>
 
     <!-- 图片 -->
-    <div id="related-images" v-if="curWordInfo && !autoReciteTimer">
+    <div id="related-images" v-if="curWordInfo">
       <iframe
         v-show="isShowAnswer"
         :src="
@@ -39,7 +39,7 @@
       <h1 id="word" class="word-info-item" v-if="reciteMode === 'word' && !autoReciteTimer">{{ curWordInfo.word }}</h1>
       <h1 id="word" class="word-info-item" v-if="reciteMode === 'acceptation'">{{ curWordInfo.acceptation.join(' ') }}</h1>
 
-      <h1 id="word" class="word-info-item" v-if="isShowAnswer && autoReciteTimer">
+      <h1 id="word" class="word-info-item" v-if="isShowAnswer && autoReciteTimer" style="font-size: 120px">
         {{ curWordInfo.word }}
         <br>
         {{ curWordInfo.acceptation.join(' ').split(/；|，/)[0].replace(/(（.+）)|(\[.+\])|(\<.+\>)/, '') }}
@@ -103,7 +103,7 @@
     </div>
 
     <!-- 下一个 -->
-    <div id="next-word" @click="randomWord" ref="next-word">下一个</div>
+    <div id="next-word" v-show="false" @click="randomWord" ref="next-word">下一个</div>
   </div>
 </template>
 
@@ -149,7 +149,7 @@ export default {
       } else if (!this.isShowAnswer) {
         this.isShowAnswer = true
         let audio = $('audio')[0]
-        if (this.autoReciteTimer) audio.playbackRate = 2.5
+        if (this.autoReciteTimer) audio.playbackRate = 1.2
         else audio.playbackRate = 1
         audio.play()
         return
@@ -261,7 +261,10 @@ export default {
       if (!this.autoReciteTimer) {
         this.autoReciteTimer = setInterval(() => {
           $(this.$refs['next-word']).trigger('click')
-        }, 200)
+          setTimeout(() => {
+            $(this.$refs['next-word']).trigger('click')
+          }, 2500)
+        }, 2800)
       } else {
         clearInterval(this.autoReciteTimer)
         this.autoReciteTimer = null
