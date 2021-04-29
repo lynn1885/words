@@ -736,14 +736,17 @@ export default {
     position: fixed;
     display: flex;
     align-items: center;
-    top: 0px;
-    left: 0px;
-    width: 100%;
+    top: 6px;
+    left: 0.5%;
+    width: 99%;
     height: 60px;
     padding: 0px 1%;
     box-sizing: border-box;
     z-index: 10;
-    background: #fff;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    box-shadow: 0px 0px 4px 0px #eee;
+    border-radius: 4px;
     .add-new-word {
       width: 200px;
       margin-right: 6px;
@@ -800,12 +803,14 @@ export default {
   #side-bar-info-container {
     position: fixed;
     display: flex;
-    top: 68px;
+    top: 76px;
     left: 0.5%;
     width: 32%;
     bottom: 10px;
+    border-radius: 4px;
     box-sizing: border-box;
     overflow: auto;
+    box-shadow: 0px 0px 4px 0px #eee;
   }
   .side-bar-info {
     width: 50%;
@@ -851,13 +856,15 @@ export default {
   // 单词书
   #words {
     position: fixed;
-    top: 68px;
+    top: 10px;
     left: 33%;
     width: 66.5%;
     // font-size: 13.5px;
     bottom: 10px;
     overflow: auto;
     transition: all 0.2s;
+    border-radius: 4px;
+    box-shadow: 0px 0px 4px 0px #eee;
   }
 
   .word-ps {
@@ -954,6 +961,7 @@ export default {
     width: 100%;
     img {
       width: 100%;
+      border-radius: 4px;
     }
   }
 

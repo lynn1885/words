@@ -36,17 +36,16 @@
 
     <!-- 单词卡 -->
     <div id="word-card" v-if="curWordInfo">
-      <h1 id="word" class="word-info-item" v-if="reciteMode === 'word' && !autoReciteTimer">{{ curWordInfo.word }}</h1>
+      <h1 id="word" class="word-info-item" v-if="reciteMode === 'word' && !autoReciteTimer" style="font-size: 80px">{{ curWordInfo.word }}</h1>
       <h1 id="word" class="word-info-item" v-if="reciteMode === 'acceptation'">{{ curWordInfo.acceptation.join(' ') }}</h1>
 
-      <h1 id="word" class="word-info-item" v-if="isShowAnswer && autoReciteTimer" style="font-size: 120px">
+      <h1 id="word" class="word-info-item" v-if="isShowAnswer && autoReciteTimer" style="font-size: 80px">
         {{ curWordInfo.word }}
-        <br>
-        {{ curWordInfo.acceptation.join(' ').split(/；|，/)[0].replace(/(（.+）)|(\[.+\])|(\<.+\>)/, '') }}
+        <!-- {{ curWordInfo.acceptation.join(' ').split(/；|，/)[0].replace(/(（.+）)|(\[.+\])|(\<.+\>)/, '') }} -->
       </h1>
 
-      <div v-show="!autoReciteTimer">
-        <div id="word-word" v-show="isShowAnswer">{{ curWordInfo.word }}</div>
+      <div style="font-size: 40px">
+        <!-- <div id="word-word" v-show="isShowAnswer">{{ curWordInfo.word }}</div> -->
         <div id="word-pron" class="word-info-item" v-show="isShowAnswer">
           <div
             v-for="(item, index) of curWordInfo.ps"
@@ -72,7 +71,11 @@
             <span class="pos">{{ item }}</span>
             {{ ' ' + curWordInfo.acceptation[index] }}
           </div>
+        </div>
 
+        <div v-show="isShowAnswer" style="color: #888; letter-spacing: 2px;">
+          {{ curWordInfo.word }}
+          <!-- <span style="font-size: 30px; color: green">{{ curWordInfo.pos[0] }}  {{ curWordInfo.acceptation.join(' ').split(/；|，/)[0].replace(/(（.+）)|(\[.+\])|(\<.+\>)/, '') }}</span> -->
         </div>
 
         <pre id="word-rem" class="word-info-item" v-show="isShowAnswer">{{
@@ -121,7 +124,7 @@ export default {
       wordList: [], // 所有单词
       curWordInfo: null, // 当前单词
       wordCount: 1, // 单词计数
-      perUnitWordsNum: 100, // 每个单元的词汇量
+      perUnitWordsNum: 2000, // 每个单元的词汇量
       wordUnits: [], // 单元信息
       imgsServerUrl: config.imgsServerUrl, // 图片服务器地址
       curWordUnit: [], // 当前单词单元
@@ -263,8 +266,8 @@ export default {
           $(this.$refs['next-word']).trigger('click')
           setTimeout(() => {
             $(this.$refs['next-word']).trigger('click')
-          }, 2500)
-        }, 2800)
+          }, 1200)
+        }, 1500)
       } else {
         clearInterval(this.autoReciteTimer)
         this.autoReciteTimer = null
@@ -415,7 +418,6 @@ export default {
 
   #word-rem {
     white-space: pre-wrap;
-    font-size: 14px;
     color: #888;
   }
 }

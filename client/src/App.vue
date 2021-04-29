@@ -6,19 +6,21 @@
 </template>
 
 <script>
-import Vue from 'vue';
+import Vue from 'vue'
 
 export default {
-	name: 'app',
-	data () {return {
+  name: 'app',
+  data () {
+    return {
 
-	};},
-	methods: {
+    }
+  },
+  methods: {
 
-	},
-	mounted () {
-		
-	}
+  },
+  mounted () {
+
+  }
 }
 </script>
 
