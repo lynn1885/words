@@ -174,6 +174,25 @@
       <img :src="imageModalSrc" style="width: 100%" />
     </el-dialog>
 
+    <!-- 方块 -->
+    <div id="block-container" v-if="curWordsInfo.length > 0">
+      <div
+        v-for="word of curWords"
+        :class="{
+          'word-item': true,
+          'good': curWordsInfoObj[word].status === '1',
+          'plain': curWordsInfoObj[word].status === '2',
+          'bad': curWordsInfoObj[word].status === '3',
+          'important': curWordsInfoObj[word].status === '⭐',
+        }"
+        :key="word"
+        :title="word"
+        @click="gotoThisWordLine(word)"
+      >
+        {{word[0]}}
+      </div>
+    </div>
+
     <!-- 音效 -->
     <audio ref="audio-player"></audio>
   </div>
@@ -201,7 +220,8 @@ export default {
       lastWordsNum: 0, // 昨天背到多少单词
       curPage: 1, // 当前页码
       curWords: [], // 当前单词
-      curWordsInfo: [], // 当前单词及详细注释
+      curWordsInfo: [], // 当前单词及详细注释, 数组格式
+      curWordsInfoObj: {}, // 当前单词及详细注释, 对象格式
       curWordsImgs: {}, // 当前单词图片
       curWordsAudios: {},
       curSelectedRowWord: '', // 当前选中行对应的单词
@@ -215,6 +235,7 @@ export default {
       googleImagesClient: null, // google images client
       soundPickUp: './static/sounds/pick-up.mp3',
       soundClick: './static/sounds/click.wav',
+      soundSave: './static/sounds/save.mp3',
       supportedWordImgFormats: ['png', 'jpg', 'gif'], // 单词图片支持的格式
       showColumns: { // 显示的列
         left: true,
@@ -248,7 +269,7 @@ export default {
         await wordsModel
           .search(word)
           .then(res => {
-            let wordInfo = res.data.wordInfo
+            let wordInfo = res.data.wordInfo || {}
             tempCurWordsInfo.push(wordInfo)
           })
           .catch(err => {
@@ -256,6 +277,8 @@ export default {
           })
       }
       this.curWordsInfo = tempCurWordsInfo
+
+      this.updateWordInfoObj()
     },
 
     // 添加单词
@@ -310,6 +333,18 @@ export default {
             console.error('words.vue, addWord, 添加失败', res)
           })
       }
+    },
+
+    // 更新单词信息对象
+    updateWordInfoObj () {
+      const curWordsInfoObj = {}
+      this.curWordsInfo.forEach(wordItem => {
+        if (wordItem.rem === undefined) wordItem.rem = ''
+        wordItem.status = wordItem.rem[wordItem.rem.length - 1] // 取最后一个字, 作为当前单词的状态
+        console.log(wordItem.status)
+        curWordsInfoObj[wordItem.word] = wordItem
+      })
+      this.curWordsInfoObj = curWordsInfoObj
     },
 
     // 播放声音
@@ -422,6 +457,8 @@ export default {
                 `updateRem() Error: 数据不一致. 后台数据: ${res.data.rem}, 前端数据: ${rem}`
               )
             }
+            this.playAudio(this.soundSave)
+            this.updateWordInfoObj()
           })
           .catch(err => {
             this.$message({
@@ -671,11 +708,17 @@ export default {
     async onTableRowRightClick (row, e) {
       e.preventDefault()
       await this.updatePage()
-      $(`td:contains(${row.word})`)[0].scrollIntoView({
-        behavior: 'instant',
+      this.gotoThisWordLine(row.word)
+    },
+
+    // 跳转到指定行
+    gotoThisWordLine (word, isSmooth) {
+      this.playAudio(this.soundClick)
+      $(`td:contains(${word})`)[0].scrollIntoView({
+        behavior: isSmooth ? 'smooth' : 'instant',
         block: 'center',
         inline: 'center'
-      }) // 模拟刷新当前行效果
+      })
     },
 
     // 拷贝单词
@@ -803,7 +846,7 @@ export default {
   #side-bar-info-container {
     position: fixed;
     display: flex;
-    top: 76px;
+    top: 72px;
     left: 0.5%;
     width: 32%;
     bottom: 10px;
@@ -856,7 +899,7 @@ export default {
   // 单词书
   #words {
     position: fixed;
-    top: 10px;
+    top: 72px;
     left: 33%;
     width: 66.5%;
     // font-size: 13.5px;
@@ -962,6 +1005,49 @@ export default {
     img {
       width: 100%;
       border-radius: 4px;
+    }
+  }
+
+  // block
+  #block-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: space-around;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px) saturate(150%);
+    box-shadow: 0px 0px 4px 0px #eee;
+    width: 100px;
+    height: 100px;
+    .word-item {
+      width: 12px;
+      height: 12px;
+      line-height: 12px;
+      background: rgba(255, 255, 255, 0.8);
+      margin-right: 2px;
+      font-size: 9px;
+      text-align: center;
+      color: #333;
+      box-sizing: border-box;
+      cursor: pointer;
+      &.good {
+        background: rgb(255, 232, 130);
+      }
+      &.plain {
+        background: rgb(243, 241, 234);
+      }
+      &.bad {
+        background: rgb(245, 220, 213);
+      }
+      &.important {
+        background: rgb(255, 232, 130);
+        border: 2px solid rgb(194, 158, 80);
+        line-height: 7px;
+      }
     }
   }
 
