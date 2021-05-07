@@ -177,19 +177,20 @@
     <!-- 方块 -->
     <div id="block-container" v-if="curWordsInfo.length > 0">
       <div
-        v-for="word of curWords"
+        v-for="word of curWordsInfo"
         :class="{
           'word-item': true,
-          'good': curWordsInfoObj[word].status === '1',
-          'plain': curWordsInfoObj[word].status === '2',
-          'bad': curWordsInfoObj[word].status === '3',
-          'important': curWordsInfoObj[word].status === '⭐',
+          'good': curWordsInfoObj[word.word].status === '1',
+          'plain': curWordsInfoObj[word.word].status === '2',
+          'bad': curWordsInfoObj[word.word].status === '3',
+          'good-important': curWordsInfoObj[word.word].status === '⭐',
+          'bad-important': curWordsInfoObj[word.word].status === '⚠',
         }"
-        :key="word"
-        :title="word"
-        @click="gotoThisWordLine(word)"
+        :key="word.word"
+        :title="word.word"
+        @click="gotoThisWordLine(word.word)"
       >
-        {{word[0]}}
+        {{word.word[0]}}
       </div>
     </div>
 
@@ -341,8 +342,8 @@ export default {
       this.curWordsInfo.forEach(wordItem => {
         if (wordItem.rem === undefined) wordItem.rem = ''
         wordItem.status = wordItem.rem[wordItem.rem.length - 1] // 取最后一个字, 作为当前单词的状态
-        console.log(wordItem.status)
         curWordsInfoObj[wordItem.word] = wordItem
+        console.log(wordItem.status)
       })
       this.curWordsInfoObj = curWordsInfoObj
     },
@@ -396,6 +397,7 @@ export default {
               tempCurWordsInfo.push(wordInfo)
             }
             this.curWordsInfo = tempCurWordsInfo
+            this.updateWordInfoObj()
           })
           .catch(err => {
             this.$message({
@@ -1038,15 +1040,22 @@ export default {
         background: rgb(255, 232, 130);
       }
       &.plain {
-        background: rgb(243, 241, 234);
+        background: rgb(240, 234, 219);
       }
       &.bad {
-        background: rgb(245, 220, 213);
+        background: rgb(247, 201, 190);
       }
-      &.important {
-        background: rgb(255, 232, 130);
-        border: 2px solid rgb(194, 158, 80);
+      &.good-important {
+        background: rgb(255, 227, 100);
+        border: 2px solid rgb(230, 169, 90);
         line-height: 7px;
+        color: rgb(165, 16, 235);
+      }
+      &.bad-important {
+        background: rgb(248, 151, 126);
+        border: 2px solid rgb(243, 90, 90);
+        line-height: 7px;
+        color: rgb(165, 16, 235);
       }
     }
   }
