@@ -71,6 +71,7 @@
       border
       :style="{left: showColumns.left ? '33%': '0.5%', width: showColumns.left ? '66.5%' : '99%'}"
     >
+      <!-- 单词 -->
       <el-table-column label="单词" width="120px">
         <template slot-scope="scope">
           <span v-show="showColumns.word">
@@ -80,6 +81,7 @@
         </template>
       </el-table-column>
 
+      <!-- 音标 -->
       <el-table-column label="音标" width="140px">
         <template slot-scope="scope">
           <div v-show="showColumns.word">
@@ -94,6 +96,7 @@
         </template>
       </el-table-column>
 
+      <!-- 含义 -->
       <el-table-column label="含义" width="160px">
         <template slot-scope="scope">
           <div v-show="showColumns.meaning">
@@ -111,6 +114,7 @@
         </template>
       </el-table-column>
 
+      <!-- 记忆 -->
       <el-table-column label="记忆">
         <template slot-scope="scope">
           <el-input
@@ -134,6 +138,7 @@
         </template>
       </el-table-column>
 
+      <!-- 操作 -->
       <el-table-column label="操作" width="96px">
         <template slot-scope="scope">
           <div class="handle-bar">
@@ -152,10 +157,18 @@
             </div>
             <div class="morpheme" @click="analyzeMorpheme($event, scope.row.word)">morpheme</div>
             <div class="syllable" @click="analyzeSyllables($event, scope.row.ps)">syllable</div>
+            <div class="evaluation">
+              <div class="good" @click="addEvaluation(scope.row, 1)">1</div>
+              <div class="plain" @click="addEvaluation(scope.row, 2)">2</div>
+              <div class="bad"  @click="addEvaluation(scope.row, 3)">3</div>
+              <div class="good-important" @click="addEvaluation(scope.row, 4)">⭐</div>
+              <div class="bad-important" @click="addEvaluation(scope.row, 5)">⚠️</div>
+            </div>
           </div>
         </template>
       </el-table-column>
 
+      <!-- 图片 -->
       <el-table-column prop="img" label="图片" :width="showColumns.img ? 'auto' : '0'">
         <template slot-scope="scope">
           <div class="word-img-container">
@@ -336,27 +349,6 @@ export default {
       }
     },
 
-    // 更新单词信息对象
-    updateWordInfoObj () {
-      const curWordsInfoObj = {}
-      this.curWordsInfo.forEach(wordItem => {
-        if (wordItem.rem === undefined) wordItem.rem = ''
-        wordItem.status = wordItem.rem[wordItem.rem.length - 1] // 取最后一个字, 作为当前单词的状态
-        curWordsInfoObj[wordItem.word] = wordItem
-        console.log(wordItem.status)
-      })
-      this.curWordsInfoObj = curWordsInfoObj
-    },
-
-    // 播放声音
-    playAudio (src, playbackRate) {
-      if (!src) return
-      if (!playbackRate) playbackRate = 1
-      this.$refs['audio-player'].setAttribute('src', src)
-      this.$refs['audio-player'].playbackRate = playbackRate
-      this.$refs['audio-player'].play()
-    },
-
     // 搜索单词
     async findWords (e) {
       if (e.keyCode === 13) {
@@ -519,12 +511,6 @@ export default {
       }
     },
 
-    // 显示图片模态框
-    showImageModal (imgSrc) {
-      this.imageModalSrc = imgSrc
-      this.isShowImageModal = true
-    },
-
     // 检测音频是否存在
     async isAudioExists (src) {
       let flag = false
@@ -546,6 +532,74 @@ export default {
           console.log('没有音频')
         })
       return flag
+    },
+
+    // 更新单词信息对象
+    updateWordInfoObj () {
+      const curWordsInfoObj = {}
+      this.curWordsInfo.forEach(wordItem => {
+        if (wordItem.rem === undefined) wordItem.rem = ''
+        wordItem.status = wordItem.rem[wordItem.rem.length - 1] // 取最后一个字, 作为当前单词的状态
+        curWordsInfoObj[wordItem.word] = wordItem
+      })
+      this.curWordsInfoObj = curWordsInfoObj
+    },
+
+    // 播放声音
+    playAudio (src, playbackRate) {
+      if (!src) return
+      if (!playbackRate) playbackRate = 1
+      this.$refs['audio-player'].setAttribute('src', src)
+      this.$refs['audio-player'].playbackRate = playbackRate
+      this.$refs['audio-player'].play()
+    },
+
+    // 添加评价
+    async addEvaluation (row, rate) {
+      if (row.rem === undefined) row.rem = ''
+
+      switch (rate) {
+        case 1:
+          row.rem += '\n1'
+          break
+        case 2:
+          row.rem += '\n2'
+          break
+        case 3:
+          row.rem += '\n3'
+          break
+        case 4:
+          row.rem += '\n⭐'
+          break
+        case 5:
+          row.rem += '\n⚠'
+          break
+      }
+
+      await wordsModel
+        .update(row.word, { rem: row.rem })
+        .then(res => {
+          if (res.data.rem === row.rem) {
+          } else {
+            throw new Error(
+              `updateRem() Error: 数据不一致. 后台数据: ${res.data.rem}, 前端数据: ${row.rem}`
+            )
+          }
+          this.playAudio(this.soundSave)
+          this.updateWordInfoObj()
+        })
+        .catch(err => {
+          this.$message({
+            message: err.message + JSON.stringify(err),
+            type: 'error'
+          })
+        })
+    },
+
+    // 显示图片模态框
+    showImageModal (imgSrc) {
+      this.imageModalSrc = imgSrc
+      this.isShowImageModal = true
     },
 
     // 跳转到背诵页面
@@ -910,23 +964,21 @@ export default {
     transition: all 0.2s;
     border-radius: 4px;
     box-shadow: 0px 0px 4px 0px #eee;
-  }
-
-  .word-ps {
-    display: inline-block;
-    background: #f4f4f4;
-    border-radius: 4px;
-    padding: 1px 6px;
-    margin: 2px 4px;
-    transition: all 0.2s;
-    color: #aaa;
-    font-size: 12px;
-    &:hover {
-      background: #eee;
+    .word-ps {
+      display: inline-block;
+      background: #f4f4f4;
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin: 2px 4px;
+      transition: all 0.2s;
+      color: #aaa;
+      font-size: 12px;
+      &:hover {
+        background: #eee;
+      }
     }
-  }
 
-  .word-acceptation {
+     .word-acceptation {
     margin-bottom: 4px;
     .pos {
       background: #f4f4f4;
@@ -1000,6 +1052,18 @@ export default {
       background: rgb(197, 192, 191);
       color: #fff;
     }
+    .evaluation {
+      background: transparent;
+      padding: 0;
+      div {
+        background: #f4f4f4;
+        margin: 1px;
+        cursor: pointer;
+        &:hover {
+          background: rgb(248, 238, 222);
+        }
+      }
+    }
   }
 
   .word-img-container {
@@ -1010,7 +1074,9 @@ export default {
     }
   }
 
-  // block
+  }
+
+  // 右下角block
   #block-container {
     position: fixed;
     right: 20px;
@@ -1022,7 +1088,7 @@ export default {
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(10px) saturate(150%);
-    box-shadow: 0px 0px 4px 0px #eee;
+    box-shadow: 0px 0px 3px 0px #ddd;
     width: 100px;
     height: 100px;
     .word-item {
