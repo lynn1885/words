@@ -377,6 +377,16 @@ export default {
           if (queryParts[1]) {
             queryObj.dsl.acceptation = queryParts[1]
           }
+        }
+        // 支持   单词+记忆  这种查询语法
+        else if (queryStr.indexOf('+') >= 0) {
+          let queryParts = queryStr.split('+')
+          if (queryParts[0]) {
+            queryObj.dsl.word = queryParts[0]
+          }
+          if (queryParts[1]) {
+            queryObj.dsl.rem = queryParts[1]
+          }
         } else {
           queryObj.dsl.word = queryStr
         }
@@ -388,6 +398,7 @@ export default {
             for (let wordInfo of res.data) {
               tempCurWordsInfo.push(wordInfo)
             }
+            this.$message.success(`共找到 ${res.data.length} 个单词`)
             this.curWordsInfo = tempCurWordsInfo
             this.updateWordInfoObj()
           })
@@ -896,6 +907,10 @@ export default {
     .recitation {
       margin-left: auto;
     }
+
+    .el-input__inner {
+      font-weight: bold;
+    }
   }
 
   // 侧边栏信息
@@ -1143,6 +1158,10 @@ export default {
   .el-table--border th {
     border-width: 1.5px !important;
     border-color: #f4f4f4;
+  }
+  .el-dialog {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(8px);
   }
 }
 </style>
