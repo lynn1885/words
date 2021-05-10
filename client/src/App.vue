@@ -1,8 +1,8 @@
 <template>
-	<div id="app">
-		<router-view name="main">
-		</router-view>
-	</div>
+  <div id="app">
+    <router-view name="main">
+    </router-view>
+  </div>
 </template>
 
 <script>
@@ -25,9 +25,12 @@ export default {
 </script>
 
 <style lang="scss">
-	@import './static/css/main.scss';
-	#words-book-container {
-		width: 94%;
-		margin: 0 auto;
-	}
+  @import './static/css/main.scss';
+  #app{
+    height: 100%;
+  }
+  #words-book-container {
+    margin: 0 auto;
+    height: 100%;
+  }
 </style>

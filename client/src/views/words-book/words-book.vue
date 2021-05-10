@@ -1159,9 +1159,9 @@ export default {
     border-width: 1.5px !important;
     border-color: #f4f4f4;
   }
-  .el-dialog {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(8px);
-  }
+  // .el-dialog {
+  //   background: rgba(255, 255, 255, 0.6);
+  //   backdrop-filter: blur(8px);
+  // }
 }
 </style>
