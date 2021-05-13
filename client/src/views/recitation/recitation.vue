@@ -48,6 +48,15 @@
         {{ index + 1 }}
       </div>
 
+      <!-- 固定单元: 考研核心词 -->
+      <div
+        class="word-unit master-core"
+        @click="setCurWordUnit('master-core')"
+        :class="{ active: curWordUnit === masterCoreWordUnit}"
+      >
+        考研核心词
+      </div>
+
     </div>
 
     <!-- 图片 -->
@@ -143,6 +152,7 @@ import $ from 'jquery'
 import _ from 'lodash'
 import config from '@/config/config.js'
 import * as wordsModel from '@/models/words.ts'
+import masterCoreWordUnit from '@/utils/words/master-core.js'
 
 export default {
   name: 'recitation',
@@ -163,7 +173,8 @@ export default {
       reciteTime: 0, // 背诵了多长时间了
       reciteTimer: null, // 背诵时间计时器,
       reciteInterval: 1500, // 背诵倒计时
-      autoReciteTimer: null // 自动背诵时钟
+      autoReciteTimer: null, // 自动背诵时钟,
+      masterCoreWordUnit
     }
   },
   watch: {
@@ -250,14 +261,18 @@ export default {
     },
 
     // 设置当前背诵单元
-    setCurWordUnit (index) {
+    setCurWordUnit (wordUnit) {
       this.isNewWordUnitSetted = true
-      if (!index) {
+
+      if (!wordUnit) {
         this.curWordUnit = this.wordList
+      } else if (typeof wordUnit === 'number') { // 单元词: 1, 2, 3
+        this.curWordUnit = this.wordUnits[wordUnit]
+      } else if (wordUnit === 'master-core') {
+        this.curWordUnit = masterCoreWordUnit
       }
-      if (typeof index === 'number') {
-        this.curWordUnit = this.wordUnits[index]
-      }
+
+      // 考研核心词
     },
 
     // 播放单词读音
@@ -371,6 +386,7 @@ export default {
     margin-right: 10px;
     border-radius: 2px;
     z-index: 100;
+    overflow: auto;
 
     /* 按钮们 */
     .top-bar-btn {
@@ -422,10 +438,10 @@ export default {
     /* 单词单元 */
     .word-unit {
       display: inline-block;
-      width: 30px;
       height: 30px;
-      margin: 0px 4px;
       line-height: 30px;
+      padding: 0px 10px;
+      margin: 0px 4px;
       box-sizing: border-box;
       text-align: center;
       border-radius: 4px;
@@ -438,6 +454,11 @@ export default {
         background: #4599f9;
         color: #fff;
       }
+    }
+
+    .master-core {
+      background: rgb(252, 247, 233);
+      color: rgb(160, 144, 92);
     }
 
     /* 单词数量统计 */
