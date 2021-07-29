@@ -818,16 +818,16 @@ export default {
     await this.updatePage()
     this.recordWordsNum()
     // let i = 0
-    // for (let word of __words) {
-    //   i++;
+    // for (let word of reading2) {
+    //   i++
     //   await new Promise(resolve => {
     //     setTimeout(() => {
-    //       this.newWord = word.toLowerCase();
+    //       this.newWord = word.toLowerCase()
     //       this.addWord({ keyCode: 13 })
-    //       console.log(i, word);
+    //       console.log(i, word)
     //       resolve()
-    //     }, 1000);
-    //   }).catch(err => {console.log(err)})
+    //     }, 3000)
+    //   }).catch(err => { console.log(err) })
     // }
   }
 }

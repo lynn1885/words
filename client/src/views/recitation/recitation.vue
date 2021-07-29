@@ -57,6 +57,13 @@
         考研核心词
       </div>
 
+      <div
+        class="word-unit master-reading"
+        @click="setCurWordUnit('master-reading')"
+        :class="{ active: curWordUnit === masterReadingWordUnit}"
+      >
+        考研阅读词
+      </div>
     </div>
 
     <!-- 图片 -->
@@ -153,6 +160,7 @@ import _ from 'lodash'
 import config from '@/config/config.js'
 import * as wordsModel from '@/models/words.ts'
 import masterCoreWordUnit from '@/utils/words/master-core.js'
+import masterReadingWordUnit from '@/utils/words/master-reading.js'
 
 export default {
   name: 'recitation',
@@ -174,7 +182,8 @@ export default {
       reciteTimer: null, // 背诵时间计时器,
       reciteInterval: 1500, // 背诵倒计时
       autoReciteTimer: null, // 自动背诵时钟,
-      masterCoreWordUnit
+      masterCoreWordUnit,
+      masterReadingWordUnit
     }
   },
   watch: {
@@ -270,6 +279,10 @@ export default {
         this.curWordUnit = this.wordUnits[wordUnit]
       } else if (wordUnit === 'master-core') {
         this.curWordUnit = masterCoreWordUnit
+      } else if (wordUnit === 'master-reading') {
+        this.curWordUnit = masterReadingWordUnit
+      } else if (wordUnit === 'reading') {
+        this.curWordUnit = reading
       }
 
       // 考研核心词
@@ -456,7 +469,7 @@ export default {
       }
     }
 
-    .master-core {
+    .master-core, .master-reading {
       background: rgb(252, 247, 233);
       color: rgb(160, 144, 92);
     }
