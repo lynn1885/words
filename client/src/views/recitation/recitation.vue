@@ -48,7 +48,14 @@
         {{ index + 1 }}
       </div>
 
-      <!-- 固定单元: 考研核心词 -->
+      <!-- 固定单元 -->
+      <div
+        class="word-unit master-reading"
+        @click="setCurWordUnit('master-all')"
+        :class="{ active: curWordUnit === masterAllUnit}"
+      >
+        考研5500词
+      </div>
       <div
         class="word-unit master-core"
         @click="setCurWordUnit('master-core')"
@@ -63,6 +70,13 @@
         :class="{ active: curWordUnit === masterReadingWordUnit}"
       >
         考研阅读词
+      </div>
+       <div
+        class="word-unit master-reading"
+        @click="setCurWordUnit('master-synonym')"
+        :class="{ active: curWordUnit === masterSynonymUnit}"
+      >
+        考研形近词辨析
       </div>
     </div>
 
@@ -161,6 +175,8 @@ import config from '@/config/config.js'
 import * as wordsModel from '@/models/words.ts'
 import masterCoreWordUnit from '@/utils/words/master-core.js'
 import masterReadingWordUnit from '@/utils/words/master-reading.js'
+import masterAllUnit from '@/utils/words/master-all.js'
+import masterSynonymUnit from '@/utils/words/master-synonym.js'
 
 export default {
   name: 'recitation',
@@ -183,7 +199,9 @@ export default {
       reciteInterval: 1500, // 背诵倒计时
       autoReciteTimer: null, // 自动背诵时钟,
       masterCoreWordUnit,
-      masterReadingWordUnit
+      masterReadingWordUnit,
+      masterAllUnit,
+      masterSynonymUnit
     }
   },
   watch: {
@@ -218,13 +236,13 @@ export default {
       }
 
       if (this.curWordUnitCache.length > 0) {
+        let wordIndex = this.wordCount // get next word by index
         this.wordCount++
-        // let wordIndex = this.wordCount // get next word by index
-        let wordIndex = _.random(0, this.curWordUnitCache.length - 1) // get next word by random
+        // let wordIndex = _.random(0, this.curWordUnitCache.length - 1) // get next word by random
         let word = this.curWordUnitCache[wordIndex]
-        this.curWordUnitCache = this.curWordUnitCache.filter(
-          (item, index) => index !== wordIndex
-        )
+        // this.curWordUnitCache = this.curWordUnitCache.filter(
+        //   (item, index) => index !== wordIndex
+        // )
         await this.getWordInfo(word)
       } else {
         this.$message({
@@ -281,8 +299,10 @@ export default {
         this.curWordUnit = masterCoreWordUnit
       } else if (wordUnit === 'master-reading') {
         this.curWordUnit = masterReadingWordUnit
-      } else if (wordUnit === 'reading') {
-        this.curWordUnit = reading
+      } else if (wordUnit === 'master-all') {
+        this.curWordUnit = masterAllUnit
+      } else if (wordUnit === 'master-synonym') {
+        this.curWordUnit = masterSynonymUnit
       }
 
       // 考研核心词
