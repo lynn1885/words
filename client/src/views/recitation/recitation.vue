@@ -4,7 +4,7 @@
     <div id="top-bar">
       <!-- 按钮 -->
       <div @click="gotoWordsBook" class="top-bar-btn back">
-        <i class="el-icon-back"></i>  单词本
+        <i class="el-icon-back"></i>  首页
       </div>
       <div @click="changeReciteMode" class="top-bar-btn mode">
         <i class="el-icon-sort"></i> 模式 {{reciteMode}}
@@ -48,35 +48,15 @@
         {{ index + 1 }}
       </div>
 
-      <!-- 固定单元 -->
+      <!-- 单词本 -->
       <div
-        class="word-unit master-reading"
-        @click="setCurWordUnit('master-all')"
-        :class="{ active: curWordUnit === masterAllUnit}"
+        class="word-book"
+        v-for="book of allBooks"
+        :key="book._id"
+        @click="setCurWordUnit(book)"
+        :class="{ active: book.words === curWordUnit }"
       >
-        考研5500词
-      </div>
-      <div
-        class="word-unit master-core"
-        @click="setCurWordUnit('master-core')"
-        :class="{ active: curWordUnit === masterCoreWordUnit}"
-      >
-        考研核心词
-      </div>
-
-      <div
-        class="word-unit master-reading"
-        @click="setCurWordUnit('master-reading')"
-        :class="{ active: curWordUnit === masterReadingWordUnit}"
-      >
-        考研阅读词
-      </div>
-       <div
-        class="word-unit master-reading"
-        @click="setCurWordUnit('master-synonym')"
-        :class="{ active: curWordUnit === masterSynonymUnit}"
-      >
-        考研形近词辨析
+        {{ book.name }}
       </div>
     </div>
 
@@ -94,7 +74,7 @@
     </div>
 
     <!-- 单词卡 -->
-    <div id="word-card" v-if="curWordInfo">
+    <div id="word-card" :class="{'big-mode': isShowWebImg ? false : true}" v-if="curWordInfo">
       <h1 id="word" class="word-info-item" v-if="reciteMode === 'word' && !autoReciteTimer" style="font-size: 80px">{{ curWordInfo.word }}</h1>
       <h1 id="word" class="word-info-item" v-if="reciteMode === 'acceptation'" style="font-size: 20px">{{ curWordInfo.acceptation.join(' ') }}</h1>
       <h1 id="word" class="word-info-item" v-if="isShowAnswer && autoReciteTimer" style="font-size: 80px">
@@ -165,6 +145,12 @@
 
     <!-- 下一个 -->
     <div id="next-word" @click="randomWord" ref="next-word">下一个</div>
+
+    <!-- 重点单词卡 -->
+    <div id="important-words">
+      <div class="percent">{{(((wordCount - importantWords.length) / wordCount) * 100).toFixed(2)}}%</div>
+      {{importantWords.join(', ')}}
+    </div>
   </div>
 </template>
 
@@ -173,10 +159,7 @@ import $ from 'jquery'
 import _ from 'lodash'
 import config from '@/config/config.js'
 import * as wordsModel from '@/models/words.ts'
-import masterCoreWordUnit from '@/utils/words/master-core.js'
-import masterReadingWordUnit from '@/utils/words/master-reading.js'
-import masterAllUnit from '@/utils/words/master-all.js'
-import masterSynonymUnit from '@/utils/words/master-synonym.js'
+import * as booksModel from '@/models/books.ts'
 
 export default {
   name: 'recitation',
@@ -198,10 +181,8 @@ export default {
       reciteTimer: null, // 背诵时间计时器,
       reciteInterval: 1500, // 背诵倒计时
       autoReciteTimer: null, // 自动背诵时钟,
-      masterCoreWordUnit,
-      masterReadingWordUnit,
-      masterAllUnit,
-      masterSynonymUnit
+      importantWords: [],
+      allBooks: []
     }
   },
   watch: {
@@ -238,11 +219,7 @@ export default {
       if (this.curWordUnitCache.length > 0) {
         let wordIndex = this.wordCount // get next word by index
         this.wordCount++
-        // let wordIndex = _.random(0, this.curWordUnitCache.length - 1) // get next word by random
         let word = this.curWordUnitCache[wordIndex]
-        // this.curWordUnitCache = this.curWordUnitCache.filter(
-        //   (item, index) => index !== wordIndex
-        // )
         await this.getWordInfo(word)
       } else {
         this.$message({
@@ -288,23 +265,22 @@ export default {
     },
 
     // 设置当前背诵单元
-    setCurWordUnit (wordUnit) {
+    setCurWordUnit (wordUnit, e) {
       this.isNewWordUnitSetted = true
+      let curWordUnit
 
       if (!wordUnit) {
-        this.curWordUnit = this.wordList
+        curWordUnit = this.wordList
       } else if (typeof wordUnit === 'number') { // 单元词: 1, 2, 3
-        this.curWordUnit = this.wordUnits[wordUnit]
-      } else if (wordUnit === 'master-core') {
-        this.curWordUnit = masterCoreWordUnit
-      } else if (wordUnit === 'master-reading') {
-        this.curWordUnit = masterReadingWordUnit
-      } else if (wordUnit === 'master-all') {
-        this.curWordUnit = masterAllUnit
-      } else if (wordUnit === 'master-synonym') {
-        this.curWordUnit = masterSynonymUnit
+        curWordUnit = this.wordUnits[wordUnit]
+      } else if (wordUnit.words) {
+        curWordUnit = wordUnit.words
       }
 
+      if (e && e.ctrlKey) {
+        curWordUnit = _.shuffle(curWordUnit)
+      }
+      this.curWordUnit = curWordUnit
       // 考研核心词
     },
 
@@ -334,6 +310,8 @@ export default {
       $(document.body).on('keydown', e => {
         if (e.keyCode === 32) {
           $(this.$refs['next-word']).trigger('click')
+        } else if (e.keyCode === 13) {
+          this.addImportantWords()
         }
       })
     },
@@ -380,16 +358,41 @@ export default {
       this.wordUnits = []
       this.calWordUnits(this.wordList)
       this.setCurWordUnit()
+    },
+
+    // 添加重点单词
+    addImportantWords () {
+      if (this.curWordInfo.word) {
+        this.importantWords.push(this.curWordInfo.word)
+      }
+    },
+
+    // 获取所有单词本
+    async listAllBooks () {
+      try {
+        const allBooks = await booksModel.listAll()
+        if (allBooks.status === 200) {
+          this.allBooks = allBooks.data
+        }
+      } catch (error) {
+        this.$messagethis.$message({
+          message: '获取词表失败',
+          type: 'error'
+        })
+      }
     }
   },
   async mounted () {
     this.setShortcut()
-    await this.getWordList(0, 20000)
+    await this.getWordList(0, 30000)
     this.calWordUnits(this.wordList)
     this.setCurWordUnit() // 不传参, 则默认设置所有单词为当前unit
     this.reciteTimer = setInterval(() => {
       this.reciteTime += 1
     }, 1000)
+
+    await this.listAllBooks()
+    console.log(123, this.allBooks)
   },
 
   beforeDestroy () {
@@ -419,7 +422,7 @@ export default {
     margin-right: 10px;
     border-radius: 2px;
     z-index: 100;
-    overflow: auto;
+    overflow-x: hidden;
 
     /* 按钮们 */
     .top-bar-btn {
@@ -489,9 +492,16 @@ export default {
       }
     }
 
-    .master-core, .master-reading {
+    .word-book {
+      display: inline-block;
+      margin-bottom: 4px;
+      margin-right: 4px;
+      padding: 0px 4px;
+      border-radius: 4px;
       background: rgb(252, 247, 233);
       color: rgb(160, 144, 92);
+      font-size: 12px;
+      cursor: pointer;
     }
 
     /* 单词数量统计 */
@@ -539,6 +549,9 @@ export default {
     box-shadow: 0px 0px 10px #eee;
     border-radius: 4px;
     overflow: auto;
+    &.big-mode {
+      width: calc(100% - 220px);
+    }
     .word-info-item {
       margin: 20px 0px;
       word-break: break-all;
@@ -568,7 +581,12 @@ export default {
       }
     }
     #word-img {
-      position: relative;
+      position: fixed;
+      bottom: 10px;
+      right: 20px;
+      border-radius: 4px;
+      overflow: hidden;
+      width: 400px;
       .word-img-container {
         width: 100%;
         img {
@@ -612,9 +630,29 @@ export default {
     }
   }
 
+  /* 重点单词 */
+  #important-words {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    position: fixed;
+    right: 20px;
+    bottom: 15px;
+    width: 140px;
+    height: 140px;
+    box-shadow: 0px 0px 10px 0px #eee;
+    border-radius: 10px;
+    z-index: 100;
+    overflow: auto;
+    color: #999;
+    padding: 10px;
+    box-sizing: border-box;
+    .percent {
+      font-weight: bold;
+    }
+  }
+
   audio {
     display: none;
   }
 }
-
 </style>
