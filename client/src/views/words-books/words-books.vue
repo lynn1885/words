@@ -153,7 +153,11 @@ export default {
 
     // 确认编辑词表
     async confirmEditBook () {
-      await this.updateBook(this.curSelectBook.name, this.tempEditWords.split('\n').filter(item => item), this.curSelectBook.importantWords)
+      await this.updateBook(
+        this.curSelectBook.name,
+        this.tempEditWords.split('\n').filter(item => item).map(item => item.trim()),
+        this.curSelectBook.importantWords
+      )
       await this.listAllBooks()
       this.curSelectBook = null
       this.tempEditWords = ''

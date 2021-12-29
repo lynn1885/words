@@ -149,7 +149,7 @@
     <!-- 重点单词卡 -->
     <div id="important-words">
       <div class="percent">{{(((wordCount - importantWords.length) / wordCount) * 100).toFixed(2)}}%</div>
-      {{importantWords.join(', ')}}
+      <pre>{{importantWords.join('\n')}}</pre>
     </div>
   </div>
 </template>
@@ -532,8 +532,10 @@ export default {
     box-sizing: border-box;
     margin-right: 10px;
     iframe {
-      width: 100%;
-      height: 100%;
+      width: 140%;
+      height: 140%;
+      margin-top: -150px;
+      margin-left: -10px;
     }
   }
 

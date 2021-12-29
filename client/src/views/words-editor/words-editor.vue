@@ -212,6 +212,7 @@ export default {
   data () {
     return {
       curBookName: '', // 当前打开的单词书的名词
+      curBook: null, // 当前的单词书
       curBookAllWords: [], // 当前单词书中所有的单词
       newWord: '', // 添加新单词
       findQuery: '', // 搜索的单词
@@ -255,6 +256,7 @@ export default {
       try {
         book = await booksModel.listOne(this.curBookName)
         book = book.data
+        this.curBook = book
       } catch (error) {
         console.error(error)
       }
@@ -427,23 +429,35 @@ export default {
         .catch(() => {})
 
       if (delWordToken && delWordToken.value) {
-        await wordsModel
-          .del(_id, delWordToken.value, word)
-          .then(res => {
-            this.$message({
-              type: 'success',
-              message: '删除成功'
-            })
-            console.log('word.vue, 删除成功', word, _id, res)
-            this.updatePage()
+        console.log(this.curBook)
+        try {
+          await booksModel.update(this.curBook.name, this.curBook.words.filter(item => item !== word), this.curBook.importantWords)
+          this.updatePage()
+        } catch (error) {
+          console.error(error)
+          this.$message({
+            type: 'error',
+            message: '删除失败'
           })
-          .catch(err => {
-            this.$message({
-              type: 'error',
-              message: '删除失败' + err
-            })
-            console.warn('word.vue, 删除失败', word, _id, err)
-          })
+        }
+
+        // await wordsModel
+        //   .del(_id, delWordToken.value, word)
+        //   .then(res => {
+        //     this.$message({
+        //       type: 'success',
+        //       message: '删除成功'
+        //     })
+        //     console.log('word.vue, 删除成功', word, _id, res)
+        //     this.updatePage()
+        //   })
+        //   .catch(err => {
+        //     this.$message({
+        //       type: 'error',
+        //       message: '删除失败' + err
+        //     })
+        //     console.warn('word.vue, 删除失败', word, _id, err)
+        //   })
       }
     },
 
