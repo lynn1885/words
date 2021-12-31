@@ -9,18 +9,24 @@
       <div @click="changeReciteMode" class="top-bar-btn mode">
         <i class="el-icon-sort"></i> 模式 {{reciteMode}}
       </div>
-      <div @click="toggleAutoRecite" :class="{
-        'top-bar-btn': true,
-        'active': autoReciteTimer
-      }">
+      <div @click="toggleAutoRecite"
+        :class="{
+          'top-bar-btn': true,
+          'active': autoReciteTimer
+        }">
         <i class="el-icon-time"></i> 自动背诵 {{autoReciteTimer ? '开' : '关'}}
       </div>
-      <div @click="toggleWebImg" :class="{
-        'top-bar-btn': true,
-        'active': isShowWebImg
-      }">
+      <div @click="toggleWebImg"
+        :class="{
+          'top-bar-btn': true,
+          'active': isShowWebImg
+        }">
         <i class="el-icon-time"></i> 图片 {{isShowWebImg ? '开' : '关'}}
       </div>
+      <div :class="{
+          'top-bar-btn': true,
+          'set-important': true
+        }" title="添加/取消重点单词">⭐ (回车)</div>
       <div>
         <el-input v-model.number="perUnitWordsNum" class="top-bar-input" size="small">
           <el-button slot="append" icon="el-icon-more-outline"  @click="changeWordUnitNum">每组个数</el-button>
@@ -42,8 +48,9 @@
         class="word-unit"
         v-for="(unit, index) of wordUnits"
         :key="unit[0]"
-        @click="setCurWordUnit(index)"
+        @click="setCurWordUnit(index, $event)"
         :class="{ active: unit === curWordUnit }"
+        title="按住ctrl点击, 进行乱序背诵"
       >
         {{ index + 1 }}
       </div>
@@ -53,8 +60,9 @@
         class="word-book"
         v-for="book of allBooks"
         :key="book._id"
-        @click="setCurWordUnit(book)"
+        @click="setCurWordUnit(book, $event)"
         :class="{ active: book.words === curWordUnit }"
+        title="按住ctrl点击, 进行乱序背诵"
       >
         {{ book.name }}
       </div>
@@ -74,7 +82,14 @@
     </div>
 
     <!-- 单词卡 -->
-    <div id="word-card" :class="{'big-mode': isShowWebImg ? false : true}" v-if="curWordInfo">
+    <div
+      id="word-card"
+      :class="{
+        'big-mode': isShowWebImg ? false : true,
+        important: curBook && curBook.importantWords && curBook.importantWords.includes(curWordInfo.word)
+      }"
+      v-if="curWordInfo"
+    >
       <h1 id="word" class="word-info-item" v-if="reciteMode === 'word' && !autoReciteTimer" style="font-size: 80px">{{ curWordInfo.word }}</h1>
       <h1 id="word" class="word-info-item" v-if="reciteMode === 'acceptation'" style="font-size: 20px">{{ curWordInfo.acceptation.join(' ') }}</h1>
       <h1 id="word" class="word-info-item" v-if="isShowAnswer && autoReciteTimer" style="font-size: 80px">
@@ -144,12 +159,12 @@
     </div>
 
     <!-- 下一个 -->
-    <div id="next-word" @click="randomWord" ref="next-word">下一个</div>
+    <div id="next-word" @click="randomWord" ref="next-word">下一个(空格)</div>
 
     <!-- 重点单词卡 -->
-    <div id="important-words">
-      <div class="percent">{{(((wordCount - importantWords.length) / wordCount) * 100).toFixed(2)}}%</div>
-      <pre>{{importantWords.join('\n')}}</pre>
+    <div id="important-words" v-if="curBook && curBook.importantWords">
+      <div class="percent">{{(((wordCount - curBook.importantWords.length) / wordCount) * 100).toFixed(2)}}%</div>
+      <pre>{{curBook.importantWords.join('\n')}}</pre>
     </div>
   </div>
 </template>
@@ -182,7 +197,8 @@ export default {
       reciteInterval: 1500, // 背诵倒计时
       autoReciteTimer: null, // 自动背诵时钟,
       importantWords: [],
-      allBooks: []
+      allBooks: [],
+      curBook: [] // 当前单词书
     }
   },
   watch: {
@@ -275,13 +291,13 @@ export default {
         curWordUnit = this.wordUnits[wordUnit]
       } else if (wordUnit.words) {
         curWordUnit = wordUnit.words
+        this.curBook = wordUnit
       }
 
       if (e && e.ctrlKey) {
         curWordUnit = _.shuffle(curWordUnit)
       }
       this.curWordUnit = curWordUnit
-      // 考研核心词
     },
 
     // 播放单词读音
@@ -308,9 +324,9 @@ export default {
     // 快捷键
     setShortcut () {
       $(document.body).on('keydown', e => {
-        if (e.keyCode === 32) {
+        if (e.keyCode === 32) { // 空格, 下一个
           $(this.$refs['next-word']).trigger('click')
-        } else if (e.keyCode === 13) {
+        } else if (e.keyCode === 13) { // 回车, 添加/取消重点单词
           this.addImportantWords()
         }
       })
@@ -361,9 +377,26 @@ export default {
     },
 
     // 添加重点单词
-    addImportantWords () {
-      if (this.curWordInfo.word) {
-        this.importantWords.push(this.curWordInfo.word)
+    async addImportantWords () {
+      if (!this.curWordInfo.word) return
+      const word = this.curWordInfo.word
+
+      // 添加到后台
+      if (this.curBook && this.curBook.words) {
+        try {
+          if (this.curBook.importantWords.includes(word)) {
+            // 取消重点
+            this.curBook.importantWords = this.curBook.importantWords.filter(item => item !== word)
+            await booksModel.update(this.curBook.name, this.curBook.words, this.curBook.importantWords)
+          } else {
+            // 添加重点
+            this.curBook.importantWords.push(word)
+            await booksModel.update(this.curBook.name, this.curBook.words, this.curBook.importantWords)
+          }
+        } catch (error) {
+          this.$message.error('添加/取消重点单词失败')
+          console.error(error)
+        }
       }
     },
 
@@ -392,7 +425,6 @@ export default {
     }, 1000)
 
     await this.listAllBooks()
-    console.log(123, this.allBooks)
   },
 
   beforeDestroy () {
@@ -496,7 +528,7 @@ export default {
       display: inline-block;
       margin-bottom: 4px;
       margin-right: 4px;
-      padding: 0px 4px;
+      padding: 0px 8px;
       border-radius: 4px;
       background: rgb(252, 247, 233);
       color: rgb(160, 144, 92);
@@ -551,8 +583,13 @@ export default {
     box-shadow: 0px 0px 10px #eee;
     border-radius: 4px;
     overflow: auto;
+    transition: all 0.2s;
     &.big-mode {
       width: calc(100% - 220px);
+    }
+    &.important {
+      background: rgb(253, 247, 226);
+      transition: all 0.2s;
     }
     .word-info-item {
       margin: 20px 0px;
@@ -634,7 +671,7 @@ export default {
 
   /* 重点单词 */
   #important-words {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(10px);
     position: fixed;
     right: 20px;

@@ -76,6 +76,7 @@
       @row-click="onTableRowClick"
       @row-contextmenu="onTableRowRightClick"
       border
+      :row-class-name="calRowClassName"
       :style="{left: showColumns.left ? '33%': '0.5%', width: showColumns.left ? '66.5%' : '99%'}"
     >
       <!-- 单词 -->
@@ -162,10 +163,8 @@
                 target="blank"
               >youtube</a>
             </div>
-            <!-- <div class="morpheme" @click="analyzeMorpheme($event, scope.row.word)">morpheme</div> -->
-            <!-- <div class="syllable" @click="analyzeSyllables($event, scope.row.ps)">syllable</div> -->
             <div class="evaluation">
-              <div class="good-important" @click="addEvaluation(scope.row, 4)">⭐</div>
+              <div @click="changeWordImportantStatus(scope.row)" title="添加/取消重单词点">⭐</div>
             </div>
           </div>
         </template>
@@ -198,7 +197,6 @@
 <script>
 import $ from 'jquery'
 import _ from 'lodash'
-import axios from 'axios'
 import * as wordsModel from '@/models/words.ts'
 import * as booksModel from '@/models/books.ts'
 import config from '@/config/config.js'
@@ -211,9 +209,11 @@ export default {
   name: 'words-book',
   data () {
     return {
+      // 单词本
       curBookName: '', // 当前打开的单词书的名词
       curBook: null, // 当前的单词书
-      curBookAllWords: [], // 当前单词书中所有的单词
+      curBookAllWordsReversed: [], // 当前单词书中所有的单词, 逆序排列
+      // 顶栏
       newWord: '', // 添加新单词
       findQuery: '', // 搜索的单词
       pageWordsNum: 30, // 每页多少个单词
@@ -264,7 +264,9 @@ export default {
       // 获取当前分页的单词
       if (book) {
         this.allWordsNum = book.words.length
-        this.curWords = book.words.slice(from, from + size + 1)
+        this.curBookAllWordsReversed = this.curBook.words.concat().reverse()
+        this.curWords = this.curBookAllWordsReversed.slice(from, from + size + 1)
+        this.curBook.importantWords = book.importantWords
       }
 
       // await wordsModel
@@ -312,44 +314,48 @@ export default {
           return
         }
 
-        await wordsModel
-          .search(word)
-          .then(async res => {
-            console.log(res)
-            if (res.data.status === 'new') {
-              // this.$message({
-              //   message: '添加单词成功',
-              //   type: 'success'
-              // })
-              // this.playAudio(this.soundPickUp);
-              this.newWord = ''
-              await this.updatePage()
-              this.playAudio(res.data.wordInfo.pron[0])
-              this.analyzeWord(undefined, res.data.wordInfo)
-            } else if (res.data.status === 'old') {
-              this.$message({
-                message: '单词已经存在了哦~',
-                type: 'warning'
-              })
-              console.warn('words.vue, addWord, 添加的单词已经存在', res)
-              this.newWord = ''
-              this.findQuery = word
-              this.findWords({ keyCode: 13 }) // 执行搜索. 这里传入keyCode: 13, 模拟按下了enter键
-            } else {
-              this.$message({
-                message: '未知的返回值' + res.data,
-                type: 'error'
-              })
-              console.error('words.vue, addWord, 未知的返回值', res)
-            }
-          })
-          .catch(err => {
-            this.$message({
-              message: '添加失败',
-              type: 'error'
+        try {
+          this.curBook.words.push(word)
+          // 添加到当前单词本
+          await booksModel.update(
+            this.curBookName,
+            Array.from(new Set(this.curBook.words)),
+            this.curBook.importantWords
+          )
+
+          // 添加到所有单词
+          await wordsModel
+            .search(word)
+            .then(async res => {
+              if (res.data.status === 'new') {
+                this.newWord = ''
+                await this.updatePage()
+                this.playAudio(res.data.wordInfo.pron[0])
+                this.analyzeWord(undefined, res.data.wordInfo)
+              } else if (res.data.status === 'old') {
+                // this.$message({
+                //   message: '单词已经存在了哦~',
+                //   type: 'warning'
+                // })
+                // console.warn('words.vue, addWord, 添加的单词已经存在', res)
+                this.newWord = ''
+                this.findQuery = word
+                this.findWords({ keyCode: 13 }) // 执行搜索. 这里传入keyCode: 13, 模拟按下了enter键
+              } else {
+                this.$message({
+                  message: '未知的返回值' + res.data,
+                  type: 'error'
+                })
+                console.error('words.vue, addWord, 未知的返回值', res)
+              }
             })
-            console.error('words.vue, addWord, 添加失败', res)
+        } catch (error) {
+          console.error('words.vue, addWord, 添加失败', error)
+          this.$message({
+            message: '添加失败',
+            type: 'error'
           })
+        }
       }
     },
 
@@ -402,7 +408,7 @@ export default {
             for (let wordInfo of res.data) {
               tempCurWordsInfo.push(wordInfo)
             }
-            this.$message.success(`共找到 ${res.data.length} 个单词`)
+            this.$message.success(`要添加的单词已存在, 共找到 ${res.data.length} 个相关单词`)
             this.curWordsInfo = tempCurWordsInfo
             this.updateWordInfoObj()
           })
@@ -431,7 +437,10 @@ export default {
       if (delWordToken && delWordToken.value) {
         console.log(this.curBook)
         try {
-          await booksModel.update(this.curBook.name, this.curBook.words.filter(item => item !== word), this.curBook.importantWords)
+          await booksModel.update(
+            this.curBook.name,
+            this.curBook.words.filter(item => item !== word),
+            this.curBook.importantWords.filter(item => item !== word))
           this.updatePage()
         } catch (error) {
           console.error(error)
@@ -581,46 +590,31 @@ export default {
       this.$refs['audio-player'].play()
     },
 
-    // 添加评价
-    async addEvaluation (row, rate) {
-      if (row.rem === undefined) row.rem = ''
-
-      switch (rate) {
-        case 1:
-          row.rem += '\n1'
-          break
-        case 2:
-          row.rem += '\n2'
-          break
-        case 3:
-          row.rem += '\n3'
-          break
-        case 4:
-          row.rem += '\n⭐'
-          break
-        case 5:
-          row.rem += '\n⚠'
-          break
+    // 标记重点单词
+    async changeWordImportantStatus (row) {
+      try {
+        if (this.curBook.importantWords.includes(row.word)) {
+          // 取消重要单词
+          await booksModel.update(
+            this.curBookName,
+            this.curBook.words,
+            Array.from(new Set(this.curBook.importantWords.filter(item => item !== row.word)))
+          )
+        } else {
+          this.curBook.importantWords.push(row.word)
+          // 添加重要单词
+          await booksModel.update(
+            this.curBookName,
+            this.curBook.words,
+            Array.from(new Set(this.curBook.importantWords))
+          )
+        }
+        // 更新页面
+        this.updatePage()
+      } catch (error) {
+        this.$message.error('添加重点单词失败')
+        console.error(error)
       }
-
-      await wordsModel
-        .update(row.word, { rem: row.rem })
-        .then(res => {
-          if (res.data.rem === row.rem) {
-          } else {
-            throw new Error(
-              `updateRem() Error: 数据不一致. 后台数据: ${res.data.rem}, 前端数据: ${row.rem}`
-            )
-          }
-          this.playAudio(this.soundSave)
-          this.updateWordInfoObj()
-        })
-        .catch(err => {
-          this.$message({
-            message: err.message + JSON.stringify(err),
-            type: 'error'
-          })
-        })
     },
 
     // 显示图片模态框
@@ -836,24 +830,29 @@ export default {
       if (correct.join(',').includes(input)) {
         this.$message.success('答对了')
       }
+    },
+
+    // 计算表单每一行的的classname
+    calRowClassName ({row}) {
+      let res = ''
+
+      // 是重点单词
+      if (this.curBook.importantWords.includes(row.word)) {
+        res += 'important '
+      }
+
+      // 不在当前单词书中
+      if (!this.curBook.words.includes(row.word)) {
+        res += 'not-in-this-book '
+      }
+      return res
     }
   },
+
   async mounted () {
     this.curBookName = this.$route.query.book
     await this.updatePage()
     this.recordWordsNum()
-    // let i = 0
-    // for (let word of reading2) {
-    //   i++
-    //   await new Promise(resolve => {
-    //     setTimeout(() => {
-    //       this.newWord = word.toLowerCase()
-    //       this.addWord({ keyCode: 13 })
-    //       console.log(i, word)
-    //       resolve()
-    //     }, 3000)
-    //   }).catch(err => { console.log(err) })
-    // }
   }
 }
 </script>
@@ -1180,6 +1179,16 @@ export default {
   }
 
   // 重置样式
+  .el-table__row {
+    &.important {
+      background: rgb(255, 253, 242)!important;
+    }
+
+    &.not-in-this-book {
+      background: rgb(246, 246, 246);
+    }
+  }
+
   .el-table::before {
     height: 0px;
   }
@@ -1197,9 +1206,5 @@ export default {
     border-width: 1.5px !important;
     border-color: #f4f4f4;
   }
-  // .el-dialog {
-  //   background: rgba(255, 255, 255, 0.6);
-  //   backdrop-filter: blur(8px);
-  // }
 }
 </style>

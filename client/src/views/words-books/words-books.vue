@@ -17,6 +17,7 @@
           {{ book.name }}
         </div>
         <div class="book-length">单词个数: {{ book.words.length }}</div>
+        <div class="book-length">重点个数: {{ book.importantWords.length }}</div>
         <div class="handle-bar">
           <i class="el-icon-delete" title="删除词表" @click.stop="deleteBook(book)"></i>
           <i class="el-icon-edit" title="编辑词表" @click.stop="editBook(book)"></i>
