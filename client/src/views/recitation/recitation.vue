@@ -26,11 +26,11 @@
       <div :class="{
           'top-bar-btn': true,
           'set-important': true
-        }" title="添加/取消重点单词">⭐ (回车)</div>
+        }" title="添加/取消重点单词">⭐ (按回车添加重点)</div>
       <div>
-        <el-input v-model.number="perUnitWordsNum" class="top-bar-input" size="small">
+        <!-- <el-input v-model.number="perUnitWordsNum" class="top-bar-input" size="small">
           <el-button slot="append" icon="el-icon-more-outline"  @click="changeWordUnitNum">每组个数</el-button>
-        </el-input>
+        </el-input> -->
         <el-input v-model="reciteInterval" class="top-bar-input" size="small">
           <el-button slot="append" icon="el-icon-time" @click="resetAutoReciteTimer">背诵定时</el-button>
         </el-input>
@@ -44,7 +44,7 @@
       </div>
 
       <!-- 单元 -->
-      <div
+      <!-- <div
         class="word-unit"
         v-for="(unit, index) of wordUnits"
         :key="unit[0]"
@@ -53,6 +53,12 @@
         title="按住ctrl点击, 进行乱序背诵"
       >
         {{ index + 1 }}
+      </div> -->
+       <div
+        class="word-unit"
+        @click="setCurWordUnit(null, $event)"
+      >
+        全部单词
       </div>
 
       <!-- 单词本 -->
@@ -61,7 +67,7 @@
         v-for="book of allBooks"
         :key="book._id"
         @click="setCurWordUnit(book, $event)"
-        :class="{ active: book.words === curWordUnit }"
+        :class="{ active: book.name === curBook.name }"
         title="按住ctrl点击, 进行乱序背诵"
       >
         {{ book.name }}
@@ -162,9 +168,9 @@
     <div id="next-word" @click="randomWord" ref="next-word">下一个(空格)</div>
 
     <!-- 重点单词卡 -->
-    <div id="important-words" v-if="curBook && curBook.importantWords">
-      <div class="percent">{{(((wordCount - curBook.importantWords.length) / wordCount) * 100).toFixed(2)}}%</div>
-      <pre>{{curBook.importantWords.join('\n')}}</pre>
+    <div id="important-words">
+      <div class="percent">{{(((wordCount - importantWords.length) / wordCount) * 100).toFixed(2)}}%</div>
+      <pre>{{importantWords.join('\n')}}</pre>
     </div>
   </div>
 </template>
@@ -198,7 +204,7 @@ export default {
       autoReciteTimer: null, // 自动背诵时钟,
       importantWords: [],
       allBooks: [],
-      curBook: [] // 当前单词书
+      curBook: {} // 当前单词书
     }
   },
   watch: {
@@ -287,15 +293,20 @@ export default {
 
       if (!wordUnit) {
         curWordUnit = this.wordList
-      } else if (typeof wordUnit === 'number') { // 单元词: 1, 2, 3
-        curWordUnit = this.wordUnits[wordUnit]
       } else if (wordUnit.words) {
         curWordUnit = wordUnit.words
         this.curBook = wordUnit
       }
 
+      // 按住ctrl点击, 乱序背诵
       if (e && e.ctrlKey) {
         curWordUnit = _.shuffle(curWordUnit)
+        this.$message.success('乱序背诵')
+      }
+      // 按住alt点击, 背诵重点
+      if (e && e.altKey) {
+        curWordUnit = this.importantWords.concat(this.curBook.importantWords)
+        this.$message.success('重点背诵')
       }
       this.curWordUnit = curWordUnit
     },
@@ -379,6 +390,10 @@ export default {
     // 添加重点单词
     async addImportantWords () {
       if (!this.curWordInfo.word) return
+      // 添加到重点单词
+      this.importantWords.push(this.curWordInfo.word)
+      this.importantWords = Array.from(new Set(this.importantWords))
+
       const word = this.curWordInfo.word
 
       // 添加到后台
@@ -588,7 +603,7 @@ export default {
       width: calc(100% - 220px);
     }
     &.important {
-      background: rgb(253, 247, 226);
+      background: rgb(255, 253, 228);
       transition: all 0.2s;
     }
     .word-info-item {
@@ -672,17 +687,18 @@ export default {
   /* 重点单词 */
   #important-words {
     background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(30px);
     position: fixed;
     right: 20px;
     bottom: 15px;
     width: 140px;
     height: 140px;
-    box-shadow: 0px 0px 10px 0px #eee;
+    box-shadow: 0px 0px 6px 0px #ccc;
     border-radius: 10px;
     z-index: 100;
     overflow: auto;
-    color: #999;
+    color: #666;
+    font-weight: bold;
     padding: 10px;
     box-sizing: border-box;
     .percent {
