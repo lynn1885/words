@@ -787,6 +787,7 @@ export default {
         // this.analyzeMorpheme(undefined, row.word);
         this.analyzeWord(undefined, row)
       }
+      this.playAudio(row.pron[0])
     },
 
     // 当表格行被右击时

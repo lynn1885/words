@@ -293,6 +293,7 @@ export default {
 
       if (!wordUnit) {
         curWordUnit = this.wordList
+        this.curBook = {}
       } else if (wordUnit.words) {
         curWordUnit = wordUnit.words
         this.curBook = wordUnit
@@ -407,6 +408,7 @@ export default {
             // 添加重点
             this.curBook.importantWords.push(word)
             await booksModel.update(this.curBook.name, this.curBook.words, this.curBook.importantWords)
+            console.log('添加')
           }
         } catch (error) {
           this.$message.error('添加/取消重点单词失败')
@@ -467,7 +469,7 @@ export default {
     backdrop-filter: blur(10px);
     padding: 10px;
     margin-right: 10px;
-    border-radius: 2px;
+    border-radius: 4px;
     z-index: 100;
     overflow-x: hidden;
 
@@ -573,7 +575,7 @@ export default {
     bottom: 10px;
     width: 40%;
     overflow: hidden;
-    border-radius: 4px;
+    border-radius: 10px;
     background: #fff;
     box-shadow: 0px 0px 10px #eee;
     box-sizing: border-box;
@@ -596,7 +598,7 @@ export default {
     box-sizing: border-box;
     background: #fff;
     box-shadow: 0px 0px 10px #eee;
-    border-radius: 4px;
+    border-radius: 10px;
     overflow: auto;
     transition: all 0.2s;
     &.big-mode {
@@ -686,13 +688,13 @@ export default {
 
   /* 重点单词 */
   #important-words {
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(30px);
     position: fixed;
     right: 20px;
     bottom: 15px;
-    width: 140px;
-    height: 140px;
+    width: 120px;
+    height: 120px;
     box-shadow: 0px 0px 6px 0px #ccc;
     border-radius: 10px;
     z-index: 100;
