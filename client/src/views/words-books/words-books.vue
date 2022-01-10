@@ -128,7 +128,7 @@ export default {
           this.allBooks = allBooks.data
         }
       } catch (error) {
-        this.$messagethis.$message({
+        this.$message({
           message: '获取词表失败',
           type: 'error'
         })

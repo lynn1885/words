@@ -77,20 +77,23 @@
       @row-contextmenu="onTableRowRightClick"
       border
       :row-class-name="calRowClassName"
-      :style="{left: showColumns.left ? '33%': '0.5%', width: showColumns.left ? '66.5%' : '99%'}"
+      :style="{left: showColumns.left ? '25%': '0.5%', width: showColumns.left ? '74%' : '99%'}"
     >
       <!-- 单词 -->
-      <el-table-column label="单词" width="120px">
+      <el-table-column label="单词" width="100px">
         <template slot-scope="scope">
-          <span v-show="showColumns.word">
-            {{scope.row.word}}
-          </span>
+          <div class="word-container">
+            <div class="frequency" title="词频">{{coca[scope.row.word.toLowerCase()]}}</div>
+            <div v-show="showColumns.word">
+              {{scope.row.word}}
+            </div>
+          </div>
           <el-input tabindex="1" size="small" @input="(e) => checkWord(e, scope.row.word)" :placeholder="scope.row.word && scope.row.word.slice(0,1)"></el-input>
         </template>
       </el-table-column>
 
       <!-- 音标 -->
-      <el-table-column label="音标" width="140px">
+      <el-table-column label="音标" width="120px">
         <template slot-scope="scope">
           <div v-show="showColumns.word">
             <div
@@ -105,7 +108,7 @@
       </el-table-column>
 
       <!-- 含义 -->
-      <el-table-column label="含义" width="160px">
+      <el-table-column label="含义" width="140px">
         <template slot-scope="scope">
           <div v-show="showColumns.meaning">
             <div
@@ -146,22 +149,45 @@
         </template>
       </el-table-column>
 
+      <!-- 辞书 -->
+      <el-table-column label="辞书" width="200px">
+        <template slot-scope="scope">
+          <div v-show="scope.row.bookRems">
+            <div class="word-book" v-for="(bookValue, bookName) in scope.row.bookRems" :key="bookName">
+              <div class="book-name">
+                {{bookName}}
+                <div
+                  class="root"
+                  v-for="(value, root) in bookValue.root"
+                  :key="root"
+                  @click="findWordByRoot(root)"
+                >
+                  {{root}}
+                </div>
+              </div>
+              <div class="book-content" v-html="bookValue.meaning.replace('\n', '<br>')">
+              </div>
+            </div>
+          </div>
+        </template>
+      </el-table-column>
+
       <!-- 操作 -->
-      <el-table-column label="操作" width="96px">
+      <el-table-column label="操作" width="40px">
         <template slot-scope="scope">
           <div class="handle-bar">
-            <div class="delete" @click="delWord(scope.row.word, scope.row._id)">delete</div>
+            <div class="delete" @click="delWord(scope.row.word, scope.row._id)">删</div>
             <div class="bing">
               <a
                 :href="'https://cn.bing.com/images/search?q=' + scope.row.word + '&go=Search&qs=n&form=QBILPG&sp=-1&pq=multitude&sc=0-0'"
                 target="blank"
-              >bing</a>
+              >图</a>
             </div>
             <div class="youtube">
               <a
                 :href="'https://www.youtube.com/results?search_query=' + scope.row.word"
                 target="blank"
-              >youtube</a>
+              >视</a>
             </div>
             <div class="evaluation">
               <div @click="changeWordImportantStatus(scope.row)" title="添加/取消重单词点">⭐</div>
@@ -188,6 +214,17 @@
     <el-dialog title="查看图片" :visible.sync="isShowImageModal" width="800px">
       <img :src="imageModalSrc" style="width: 100%" />
     </el-dialog>
+
+    <!-- 词根单词 -->
+    <div class="root-words" v-show="rootWords" ref="root-words">
+      <div class="title">
+        {{curRoot}}, 最多显示30个
+      </div>
+      <div class="word" v-for="(value, wordName) in rootWords" :key="wordName">
+        <div class="word-name">{{coca[wordName]}}. {{wordName}}</div>
+        <div class="meaning" v-html="value.split('\n').join('<br>')"></div>
+      </div>
+    </div>
 
     <!-- 音效 -->
     <audio ref="audio-player"></audio>
@@ -245,7 +282,9 @@ export default {
         img: true,
         rem: true,
         analysis: false
-      }
+      },
+      curRoot: '', // 当前词根
+      rootWords: null // 词根单词
     }
   },
   methods: {
@@ -282,23 +321,30 @@ export default {
       //   })
     },
 
-    // 获取单词信息
-    async getWordInfo (words) {
+    // 获取一堆单词信息
+    async getWordsInfo (words, isReturn = false) {
       const tempCurWordsInfo = []
       for (let word of words) {
         await wordsModel
           .search(word)
           .then(res => {
             let wordInfo = res.data.wordInfo || {}
+            if (wordInfo.word) {
+              wordInfo.bookRems = this.getWordBookRem(wordInfo.word)
+            }
             tempCurWordsInfo.push(wordInfo)
           })
           .catch(err => {
             throw new Error('words.vue, 获取单词信息失败' + word + err)
           })
       }
-      this.curWordsInfo = tempCurWordsInfo
 
-      this.updateWordInfoObj()
+      if (isReturn) {
+        return tempCurWordsInfo
+      } else {
+        this.curWordsInfo = tempCurWordsInfo
+        this.updateWordInfoObj()
+      }
     },
 
     // 添加单词
@@ -406,6 +452,9 @@ export default {
           .then(res => {
             const tempCurWordsInfo = []
             for (let wordInfo of res.data) {
+              if (wordInfo.word) {
+                wordInfo.bookRems = this.getWordBookRem(wordInfo.word)
+              }
               tempCurWordsInfo.push(wordInfo)
             }
             this.$message.success(`要添加的单词已存在, 共找到 ${res.data.length} 个相关单词`)
@@ -518,7 +567,7 @@ export default {
         pageNum * this.pageWordsNum,
         this.pageWordsNum - 1
       )
-      await this.getWordInfo(this.curWords)
+      await this.getWordsInfo(this.curWords)
     },
 
     // 加载单词图片
@@ -847,6 +896,50 @@ export default {
         res += 'not-in-this-book '
       }
       return res
+    },
+
+    // 通过词根找单词
+    async findWordByRoot (root) {
+      this.curRoot = root
+      let foundWords = []
+      for (let bookName in this.bookRems) {
+        const words = this.bookRems[bookName]
+        for (let wordName in words) {
+          if (words[wordName].root[root]) {
+            foundWords.push(wordName)
+          }
+        }
+      }
+
+      const length = foundWords.length
+      if (length > 30) { // 最多查询30个
+        foundWords = foundWords.slice(0, 30)
+      }
+
+      const res = {}
+      let isEmpty = true
+      try {
+        const r = await this.getWordsInfo(foundWords, true)
+        for (const wordData of r) {
+          isEmpty = false
+          let meaning = ''
+          wordData.pos.forEach((item, index) => {
+            meaning += `${item} ${wordData.acceptation[index]}\n`
+          })
+          res[wordData.word] = meaning
+        }
+      } catch (error) {
+        console.error('查询词根失败', error)
+        this.$message.error('查询词根失败')
+      }
+
+      if (!isEmpty) {
+        this.rootWords = res
+      }
+
+      setTimeout(() => {
+        this.$refs['root-words'].scrollTop = 0
+      }, 500)
     }
   },
 
@@ -953,7 +1046,7 @@ export default {
     display: flex;
     top: 72px;
     left: 0.5%;
-    width: 32%;
+    width: 24%;
     bottom: 10px;
     border-radius: 4px;
     box-sizing: border-box;
@@ -1009,14 +1102,26 @@ export default {
   #words {
     position: fixed;
     top: 72px;
-    left: 33%;
-    width: 66.5%;
+    left: 25%;
+    width: 74%;
     // font-size: 13.5px;
     bottom: 10px;
     overflow: auto;
     transition: all 0.2s;
     border-radius: 4px;
     box-shadow: 0px 0px 4px 0px #eee;
+    .word-container {
+      .frequency {
+        width: fit-content;
+        height: fit-content;
+        padding: 2px;
+        color: #ccc;
+        line-height: 10px;
+        font-size: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+    }
     .word-ps {
       display: inline-block;
       background: #f4f4f4;
@@ -1031,7 +1136,7 @@ export default {
       }
     }
 
-     .word-acceptation {
+    .word-acceptation {
     margin-bottom: 4px;
     .pos {
       background: #f4f4f4;
@@ -1068,12 +1173,26 @@ export default {
     }
   }
 
+  .word-book {
+    font-size: 12px;
+    .book-name {
+      background: rgb(251, 244, 225);
+      padding: 4px;
+      border-radius: 4px;
+      display: flex;
+      .root {
+        cursor: pointer;
+        margin: 0px 4px;
+      }
+    }
+  }
+
   .handle-bar {
     div {
       display: inline-block;
       background: #f4f4f4;
       padding: 2px 4px;
-      margin: 2px;
+      margin: 2px 0px;
       border-radius: 4px;
       color: #aaa;
       font-size: 12px;
@@ -1126,56 +1245,34 @@ export default {
       border-radius: 4px;
     }
   }
-
   }
 
-  // 右下角block
-  #block-container {
+  /* 词根单词 */
+  .root-words {
     position: fixed;
-    right: 20px;
-    bottom: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-content: space-around;
+    left: 10px;
+    bottom: 10px;
+    width: 200px;
+    height: 200px;
     border-radius: 4px;
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px) saturate(150%);
-    box-shadow: 0px 0px 3px 0px #ddd;
-    width: 100px;
-    height: 100px;
-    .word-item {
-      width: 12px;
-      height: 12px;
-      line-height: 12px;
-      background: rgba(255, 255, 255, 0.8);
-      margin-right: 2px;
-      font-size: 9px;
+    background: #fff;
+    box-shadow: 0px 0px 10px 0px #ccc;
+    font-size: 12px;
+    overflow: auto;
+    .title {
       text-align: center;
-      color: #333;
-      box-sizing: border-box;
-      cursor: pointer;
-      &.good {
-        background: rgb(255, 232, 130);
-      }
-      &.plain {
-        background: rgb(240, 234, 219);
-      }
-      &.bad {
-        background: rgb(247, 201, 190);
-      }
-      &.good-important {
-        background: rgb(255, 227, 100);
-        border: 2px solid rgb(230, 169, 90);
-        line-height: 7px;
-        color: rgb(165, 16, 235);
-      }
-      &.bad-important {
-        background: rgb(248, 151, 126);
-        border: 2px solid rgb(243, 90, 90);
-        line-height: 7px;
-        color: rgb(165, 16, 235);
-      }
+      color: #ceb78d;
+      font-weight: bold;
+      margin: 2px;
+    }
+    .word-name {
+      background: #faf3e6;
+      border-radius: 2px;
+      padding-left: 4px;
+    }
+    .meaning {
+      color: #666;
+      padding-left: 4px;
     }
   }
 
