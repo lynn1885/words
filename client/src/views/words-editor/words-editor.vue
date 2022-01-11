@@ -205,6 +205,12 @@
               @error="loadWordImg($event.target, scope.row.word)"
               @click="showImageModal(curWordsImgs[scope.row.word])"
             />
+            <img
+              ref="root-img"
+              :src="imgsServerUrl + '/root/' + scope.row.word + '.jpeg'"
+              @error="onImgError($event)"
+              @click="showImageModal(imgsServerUrl + '/root/' + scope.row.word + '.jpeg')"
+            />
           </div>
         </template>
       </el-table-column>
@@ -217,6 +223,7 @@
 
     <!-- 词根单词 -->
     <div class="root-words" v-show="rootWords" ref="root-words">
+      <i class="close el-icon-close" @click="rootWords = false"></i>
       <div class="title">
         {{curRoot}}, 最多显示30个
       </div>
@@ -594,6 +601,11 @@ export default {
           break
         }
       }
+    },
+
+    // 图片加载失败时
+    onImgError (e) {
+      e.currentTarget.height = '0'
     },
 
     // 检测音频是否存在
@@ -1259,6 +1271,13 @@ export default {
     box-shadow: 0px 0px 10px 0px #ccc;
     font-size: 12px;
     overflow: auto;
+    .close {
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px;
+      color: #666;
+      float: right;
+    }
     .title {
       text-align: center;
       color: #ceb78d;
