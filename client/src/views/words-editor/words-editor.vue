@@ -138,8 +138,9 @@
       </el-table-column>
 
       <!-- 含义 -->
-      <el-table-column label="含义" min-width="200px">
+      <el-table-column label="含义" min-width="220px">
         <template slot-scope="scope">
+          <!-- 含义 -->
           <div v-show="showColumns.meaning">
             <div
               v-for="(item, index) of scope.row.pos"
@@ -150,6 +151,8 @@
               {{' ' + scope.row.acceptation[index]}}
             </div>
           </div>
+          <!-- 柯林斯 -->
+          <div class="collions" v-html="scope.row.collins"></div>
           <el-input v-show="!showColumns.meaning" size="small" @input="(e) => checkMeaning(e, scope.row.acceptation)" :placeholder="scope.row.acceptation[0] && scope.row.acceptation[0].slice(0,1)"></el-input>
 
         </template>
@@ -1296,6 +1299,22 @@ export default {
         width: 100%;
         border-radius: 4px;
       }
+    }
+  }
+
+  /* 柯林斯字典 */
+  .collions {
+    max-height: 140px;
+    overflow: auto;
+    ul {
+      padding: 0px 20px;
+      margin: 0;
+    }
+    li,p {
+      margin: 0;
+    }
+    br {
+      display: none;
     }
   }
 
