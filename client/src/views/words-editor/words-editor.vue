@@ -77,38 +77,68 @@
       @row-contextmenu="onTableRowRightClick"
       border
       :row-class-name="calRowClassName"
-      :style="{left: showColumns.left ? '25%': '0.5%', width: showColumns.left ? '74%' : '99%'}"
+      :style="{left: showColumns.left ? '25%': '0%', width: showColumns.left ? '75%' : '100%'}"
     >
       <!-- 单词 -->
-      <el-table-column label="单词" width="100px">
+      <el-table-column label="单词" width="140px">
         <template slot-scope="scope">
           <div class="word-container">
-            <div class="frequency" title="词频">{{coca[scope.row.word.toLowerCase()]}}</div>
-            <div v-show="showColumns.word">
+            <!-- 单词 -->
+            <div class="word-word" v-show="showColumns.word">
               {{scope.row.word}}
             </div>
-          </div>
-          <el-input tabindex="1" size="small" @input="(e) => checkWord(e, scope.row.word)" :placeholder="scope.row.word && scope.row.word.slice(0,1)"></el-input>
-        </template>
-      </el-table-column>
-
-      <!-- 音标 -->
-      <el-table-column label="音标" width="120px">
-        <template slot-scope="scope">
-          <div v-show="showColumns.word">
-            <div
-              v-for="(item, index) of scope.row.ps"
-              :key="index"
-              class="word-ps"
-              @mouseover="playAudio(scope.row.pron[index])"
-              @click="playAudio(scope.row.pron[index])"
-            >{{'[' + item + ']' }}</div>
+            <!-- 词频 -->
+            <div class="frequency" title="词频">{{coca[scope.row.word.toLowerCase()]}}</div>
+            <!-- 音标 -->
+            <div v-show="showColumns.word">
+              <div
+                v-for="(item, index) of scope.row.ps"
+                :key="index"
+                class="word-ps"
+                @mouseover="playAudio(scope.row.pron[index])"
+                @click="playAudio(scope.row.pron[index])"
+              >{{'[' + item + ']' }}</div>
+            </div>
+            <!-- 输入框 -->
+            <el-input
+              tabindex="1"
+              size="small"
+              @input="(e) => checkWord(e, scope.row.word)"
+              :placeholder="scope.row.word && scope.row.word.slice(0,1)"
+            ></el-input>
+            <!-- 操作栏 -->
+            <div class="handle-bar">
+              <div class="delete" @click="delWord(scope.row.word, scope.row._id)">
+                <i class="el-icon-delete"></i>
+              </div>
+              <div class="bing">
+                <a
+                  :href="'https://cn.bing.com/images/search?q=' + scope.row.word + '&go=Search&qs=n&form=QBILPG&sp=-1&pq=multitude&sc=0-0'"
+                  target="blank"
+                >
+                  <i class="el-icon-picture"></i>
+                </a>
+              </div>
+              <div class="youtube">
+                <a
+                  :href="'https://www.youtube.com/results?search_query=' + scope.row.word"
+                  target="blank"
+                >
+                  <i class="el-icon-mobile-phone"></i>
+                </a>
+              </div>
+              <div class="star">
+                <div @click="changeWordImportantStatus(scope.row)" title="添加/取消重单词点">
+                  <i class="el-icon-star-on"></i>
+                </div>
+              </div>
+            </div>
           </div>
         </template>
       </el-table-column>
 
       <!-- 含义 -->
-      <el-table-column label="含义" width="140px">
+      <el-table-column label="含义" min-width="200px">
         <template slot-scope="scope">
           <div v-show="showColumns.meaning">
             <div
@@ -126,8 +156,9 @@
       </el-table-column>
 
       <!-- 记忆 -->
-      <el-table-column label="记忆">
+      <el-table-column label="记忆"  min-width="200px">
         <template slot-scope="scope">
+          <!-- 输入框 -->
           <el-input
             v-show="showColumns.rem"
             v-model="scope.row.rem"
@@ -136,6 +167,7 @@
             resize="none"
             @keydown.native="updateRem($event, scope.row.word, scope.row.rem)"
           ></el-input>
+          <!-- 音频 -->
           <audio
             :src="`${audiosServerUrl}/${scope.row.word}.m4a`"
             @loadeddata="$set(curWordsAudios, scope.row.word, true)"
@@ -146,14 +178,23 @@
             @mouseover="playAudio(`${audiosServerUrl}/${scope.row.word}.m4a`, 1.5)"
             @click="playAudio(`${audiosServerUrl}/${scope.row.word}.m4a`, 2.0)"
           >音 频</div>
+          <!-- 记忆图片 -->
+          <div class="word-img-container">
+            <img
+              src
+              @error="loadWordImg($event.target, scope.row.word)"
+              @click="showImageModal(curWordsImgs[scope.row.word])"
+            />
+          </div>
         </template>
       </el-table-column>
 
-      <!-- 辞书 -->
-      <el-table-column label="辞书" width="200px">
+      <!-- 词书 -->
+      <el-table-column label="词书" min-width="200px">
         <template slot-scope="scope">
           <div v-show="scope.row.bookRems">
             <div class="word-book" v-for="(bookValue, bookName) in scope.row.bookRems" :key="bookName">
+              <!-- 书名 -->
               <div class="book-name">
                 {{bookName}}
                 <div
@@ -165,52 +206,19 @@
                   {{root}}
                 </div>
               </div>
+              <!-- 书本内容 -->
               <div class="book-content" v-html="bookValue.meaning.replace('\n', '<br>')">
               </div>
             </div>
-          </div>
-        </template>
-      </el-table-column>
-
-      <!-- 操作 -->
-      <el-table-column label="操作" width="40px">
-        <template slot-scope="scope">
-          <div class="handle-bar">
-            <div class="delete" @click="delWord(scope.row.word, scope.row._id)">删</div>
-            <div class="bing">
-              <a
-                :href="'https://cn.bing.com/images/search?q=' + scope.row.word + '&go=Search&qs=n&form=QBILPG&sp=-1&pq=multitude&sc=0-0'"
-                target="blank"
-              >图</a>
+            <!-- 图片 -->
+            <div class="word-img-container">
+              <img
+                ref="root-img"
+                :src="imgsServerUrl + '/root/' + scope.row.word + '.jpeg'"
+                @error="onImgError($event)"
+                @click="showImageModal(imgsServerUrl + '/root/' + scope.row.word + '.jpeg')"
+              />
             </div>
-            <div class="youtube">
-              <a
-                :href="'https://www.youtube.com/results?search_query=' + scope.row.word"
-                target="blank"
-              >视</a>
-            </div>
-            <div class="evaluation">
-              <div @click="changeWordImportantStatus(scope.row)" title="添加/取消重单词点">⭐</div>
-            </div>
-          </div>
-        </template>
-      </el-table-column>
-
-      <!-- 图片 -->
-      <el-table-column prop="img" label="图片" :width="showColumns.img ? 'auto' : '0'">
-        <template slot-scope="scope">
-          <div class="word-img-container">
-            <img
-              src
-              @error="loadWordImg($event.target, scope.row.word)"
-              @click="showImageModal(curWordsImgs[scope.row.word])"
-            />
-            <img
-              ref="root-img"
-              :src="imgsServerUrl + '/root/' + scope.row.word + '.jpeg'"
-              @error="onImgError($event)"
-              @click="showImageModal(imgsServerUrl + '/root/' + scope.row.word + '.jpeg')"
-            />
           </div>
         </template>
       </el-table-column>
@@ -227,9 +235,11 @@
       <div class="title">
         {{curRoot}}, 最多显示30个
       </div>
-      <div class="word" v-for="(value, wordName) in rootWords" :key="wordName">
-        <div class="word-name">{{coca[wordName]}}. {{wordName}}</div>
-        <div class="meaning" v-html="value.split('\n').join('<br>')"></div>
+      <div class="words">
+        <div class="word" v-for="(value, wordName) in rootWords" :key="wordName">
+          <div class="word-name">{{coca[wordName]}}{{coca[wordName] ? '. ': ''}}{{wordName}}</div>
+          <div class="meaning" v-html="value.split('\n').join('<br>')"></div>
+        </div>
       </div>
     </div>
 
@@ -246,8 +256,6 @@ import * as booksModel from '@/models/books.ts'
 import config from '@/config/config.js'
 import morphemes from '@/utils/morphemes.js'
 import syllables from '@/utils/syllables.js'
-
-// const __words = [];
 
 export default {
   name: 'words-book',
@@ -912,6 +920,7 @@ export default {
 
     // 通过词根找单词
     async findWordByRoot (root) {
+      this.rootWords = []
       this.curRoot = root
       let foundWords = []
       for (let bookName in this.bookRems) {
@@ -963,6 +972,7 @@ export default {
 }
 </script>
 <style lang="scss">
+/* 单词本 */
 #words-book {
   margin-bottom: 50px;
   &:after {
@@ -976,28 +986,27 @@ export default {
     position: fixed;
     display: flex;
     align-items: center;
-    top: 6px;
-    left: 0.5%;
-    width: 99%;
+    top: 0;
+    left: 0;
+    width: 100%;
     height: 60px;
-    padding: 0 1%;
     box-sizing: border-box;
     z-index: 10;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
+    background: #fff;
     box-shadow: 0px 0px 4px 0px #eee;
     border-radius: 4px;
     /* 返回 */
     .back {
       background: rgb(252, 247, 233);
       color: rgb(160, 144, 92);
-      padding: 4px 8px 4px 4px;
-      border-radius: 4px;
       margin-right: 10px;
+      padding-left: 10px;
       cursor: pointer;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      height: 60px;
+      line-height: 60px;
       width: 140px;
     }
     .add-new-word {
@@ -1056,11 +1065,9 @@ export default {
   #side-bar-info-container {
     position: fixed;
     display: flex;
-    top: 72px;
-    left: 0.5%;
-    width: 24%;
-    bottom: 10px;
-    border-radius: 4px;
+    top: 65px;
+    width: 24.5%;
+    bottom: 0;
     box-sizing: border-box;
     overflow: auto;
     box-shadow: 0px 0px 4px 0px #eee;
@@ -1113,153 +1120,186 @@ export default {
   // 单词书
   #words {
     position: fixed;
-    top: 72px;
-    left: 25%;
-    width: 74%;
-    // font-size: 13.5px;
-    bottom: 10px;
+    top: 65px;
+    bottom: 0px;
     overflow: auto;
     transition: all 0.2s;
-    border-radius: 4px;
     box-shadow: 0px 0px 4px 0px #eee;
+    /* 单词项 */
     .word-container {
+      /* 单词 */
+      .word-word {
+        font-weight: bolder;
+        font-size: 18px;
+        color: #333;
+      }
+      /* 音标 */
+      .word-ps {
+        width: fit-content;
+        background: #f4f4f4;
+        border-radius: 4px;
+        padding: 1px 6px;
+        transition: all 0.2s;
+        margin-top: 4px;
+        color: #aaa;
+        font-size: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        &:hover {
+          background: #eee;
+        }
+      }
+
+      /* 输入框 */
+      .el-input {
+        margin-top: 4px;
+        height: 26px;
+        input {
+          height: 26px;
+          line-height: 26px;
+        }
+      }
+
+      /* 词频 */
       .frequency {
         width: fit-content;
         height: fit-content;
         padding: 2px;
-        color: #ccc;
+        color: #aaa;
         line-height: 10px;
         font-size: 10px;
-        border: 1px solid #ccc;
+        font-weight: bold;
+        border: 2px solid #ccc;
         border-radius: 4px;
+        margin-top: 4px;
       }
-    }
-    .word-ps {
-      display: inline-block;
-      background: #f4f4f4;
-      border-radius: 4px;
-      padding: 1px 6px;
-      margin: 2px 4px;
-      transition: all 0.2s;
-      color: #aaa;
-      font-size: 12px;
-      &:hover {
-        background: #eee;
-      }
-    }
 
-    .word-acceptation {
-    margin-bottom: 4px;
-    .pos {
-      background: #f4f4f4;
-      padding: 2px;
-      border-radius: 4px;
-      color: #aaa;
-    }
-  }
-
-  .el-textarea__inner {
-    border: none !important;
-    background: transparent;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  .unsaved-textarea {
-    background: rgb(255, 241, 241);
-  }
-
-  .word-rem-audio {
-    display: inline-block;
-    background: #faf3e6;
-    border-radius: 4px;
-    padding: 1px 14px;
-    margin-top: 10px;
-    transition: all 0.2s;
-    color: #ddc497;
-    font-size: 12px;
-    cursor: pointer;
-    &:hover {
-      background: #f5ebdb;
-      color: #ceb78d;
-    }
-  }
-
-  .word-book {
-    font-size: 12px;
-    .book-name {
-      background: rgb(251, 244, 225);
-      padding: 4px;
-      border-radius: 4px;
-      display: flex;
-      .root {
-        cursor: pointer;
-        margin: 0px 4px;
-      }
-    }
-  }
-
-  .handle-bar {
-    div {
-      display: inline-block;
-      background: #f4f4f4;
-      padding: 2px 4px;
-      margin: 2px 0px;
-      border-radius: 4px;
-      color: #aaa;
-      font-size: 12px;
-      transition: all 0.2s;
-      cursor: pointer;
-      a {
-        display: inline-block;
-        height: 100%;
-        width: 100%;
-      }
-    }
-    .delete:hover {
-      background: rgb(241, 120, 99);
-      color: #fff;
-    }
-    .youtube:hover {
-      background: rgb(241, 120, 99);
-      color: #fff;
-    }
-    .bing:hover {
-      background: rgb(21, 158, 158);
-      color: #fff;
-    }
-    .morpheme:hover {
-      background: rgb(197, 192, 191);
-      color: #fff;
-    }
-    .syllable:hover {
-      background: rgb(197, 192, 191);
-      color: #fff;
-    }
-    .evaluation {
-      background: transparent;
-      padding: 0;
-      div {
-        background: #f4f4f4;
-        margin: 1px;
-        cursor: pointer;
-        &:hover {
-          background: rgb(248, 238, 222);
+      /* 操作栏 */
+      .handle-bar {
+        margin-top: 4px;
+        div {
+          display: inline-block;
+          background: #f4f4f4;
+          padding: 0px 4px;
+          border-radius: 4px;
+          color: #aaa;
+          font-size: 12px;
+          transition: all 0.2s;
+          cursor: pointer;
+          a {
+            display: inline-block;
+            height: 100%;
+            width: 100%;
+          }
+          i {
+            font-weight: bold;
+          }
+        }
+        .delete:hover {
+          background: rgb(241, 120, 99);
+          color: #fff;
+        }
+        .youtube:hover {
+          background: rgb(241, 120, 99);
+          color: #fff;
+        }
+        .bing:hover {
+          background: rgb(21, 158, 158);
+          color: #fff;
+        }
+        .morpheme:hover {
+          background: rgb(197, 192, 191);
+          color: #fff;
+        }
+        .syllable:hover {
+          background: rgb(197, 192, 191);
+          color: #fff;
+        }
+        .star {
+          background: transparent;
+          padding: 0;
+          div {
+            background: #f4f4f4;
+            margin: 1px;
+            cursor: pointer;
+            &:hover {
+              background: rgb(255, 234, 114);
+              color: #fff;
+            }
+          }
         }
       }
     }
-  }
 
-  .word-img-container {
-    width: 100%;
-    img {
-      width: 100%;
+    /* 含义 */
+    .word-acceptation {
+      margin-bottom: 4px;
+      .pos {
+        background: #f4f4f4;
+        padding: 2px;
+        border-radius: 4px;
+        color: #999;
+      }
+    }
+
+    /* 记忆输入框 */
+    .el-textarea__inner {
+      border: none !important;
+      background: transparent;
+      padding: 0 !important;
+      margin: 0 !important;
+      font-family: '微软雅黑';
+    }
+    .unsaved-textarea {
+      background: rgb(255, 241, 241);
+    }
+    .word-rem-audio {
+      display: inline-block;
+      background: #faf3e6;
       border-radius: 4px;
+      padding: 1px 14px;
+      margin-top: 10px;
+      transition: all 0.2s;
+      color: #ddc497;
+      font-size: 12px;
+      cursor: pointer;
+      &:hover {
+        background: #f5ebdb;
+        color: #ceb78d;
+      }
+    }
+    /* 词书 */
+    .word-book {
+      .book-name {
+        margin-top: 4px;
+        background: rgb(251, 248, 238);
+        line-height: 24px;
+        padding-left: 4px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        .root {
+          cursor: pointer;
+          background: rgb(251, 236, 210);
+          border-radius: 4px;
+          margin: 0px 4px;
+          padding: 0px 4px
+        }
+      }
+    }
+
+    .word-img-container {
+      margin-top: 10px;
+      width: 100%;
+      img {
+        width: 100%;
+        border-radius: 4px;
+      }
     }
   }
-  }
 
-  /* 词根单词 */
+  /* 词根单词弹窗 */
   .root-words {
     position: fixed;
     left: 10px;
@@ -1267,31 +1307,43 @@ export default {
     width: 200px;
     height: 200px;
     border-radius: 4px;
-    background: #fff;
-    box-shadow: 0px 0px 10px 0px #ccc;
-    font-size: 12px;
-    overflow: auto;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    box-shadow: 0px 0px 4px 0px #aaa;
+    font-size: 14px;
+    overflow: hidden;
     .close {
       font-size: 16px;
       cursor: pointer;
       padding: 4px;
-      color: #666;
+      color: #999;
+      font-weight: bold;
       float: right;
     }
     .title {
       text-align: center;
-      color: #ceb78d;
+      color: #dfbc7b;
       font-weight: bold;
       margin: 2px;
     }
-    .word-name {
-      background: #faf3e6;
-      border-radius: 2px;
-      padding-left: 4px;
-    }
-    .meaning {
-      color: #666;
-      padding-left: 4px;
+    .words {
+      height: 180px;
+      width: 100%;
+      overflow: auto;
+      .word {
+        margin-bottom: 10px;
+        .word-name {
+          background: #f8f1e3;
+          border-radius: 2px;
+          padding-left: 4px;
+          color: #444;
+          text-align: center;
+        }
+        .meaning {
+          color: #666;
+          padding-left: 4px;
+        }
+      }
     }
   }
 
