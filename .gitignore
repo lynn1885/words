@@ -9,7 +9,7 @@ client/dist
 db
 imgs
 sounds
-tools
+/tools
 server/node_modules
 start-client.bat
 start-db.bat
