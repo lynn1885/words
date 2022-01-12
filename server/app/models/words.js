@@ -97,7 +97,6 @@ WordsSchema.static('fecth', async function (word) {
 
 // list
 WordsSchema.static('list', async function ({ from, size, bookName, order, sortBy }) {
-  console.log(123, bookName);
   return await this.find({
     books: {
       $all: [bookName]

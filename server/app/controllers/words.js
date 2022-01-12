@@ -3,6 +3,7 @@ const assert = require('assert');
 const axios = require('axios');
 const Words = require('../models/words.js');
 const deleteWordToken = require.main.require('./config/config.js').deleteWordToken;
+const collins = require('../../tools/collins.json')
 
 // search: 会从本地库查找, 如果找不到, 会从远程金山词霸的库查找
 exports.search = async function (req, res) {
@@ -27,6 +28,7 @@ exports.search = async function (req, res) {
 
   // 本地数据查询并返回
   if (searchRes && searchRes.wordInfo) {
+    searchRes.wordInfo._doc.collins = collins[word.toLowerCase()]
     res.send(searchRes);
   }
 
@@ -49,12 +51,13 @@ exports.search = async function (req, res) {
     if (ifFetchSuccess) {
       searchRes.wordInfo = await Words.findOne({ word });
       searchRes.status = 'new';
+      searchRes.wordInfo._doc.collins = collins[word.toLowerCase()]
       res.send(searchRes);
     }
   }
 }
 
-// find: 只会从本地数据库查找, 默认会把传入的内容转换为正则, 不区分大小写, 返回最多20条
+// find: 只会从本地数据库查找, 默认会把传入的内容转换为正则, 不区分大小写, 返回最多100条
 exports.find = async function (req, res) {
   let searchRes;
   let query;
@@ -89,6 +92,9 @@ exports.find = async function (req, res) {
 
   // 查找
   searchRes = await Words.find(query.dsl, null, { limit: 100 });
+  searchRes.forEach(doc => {
+    doc._doc.collins = collins[doc._doc.word.toLowerCase()]
+  })
   res.send(searchRes);
 }
 
