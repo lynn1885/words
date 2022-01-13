@@ -1290,6 +1290,10 @@ export default {
           padding: 0px 4px
         }
       }
+      .book-content {
+        max-height: 200px;
+        overflow: auto;
+      }
     }
 
     .word-img-container {
@@ -1304,7 +1308,7 @@ export default {
 
   /* 柯林斯字典 */
   .collions {
-    max-height: 140px;
+    max-height: 200px;
     overflow: auto;
     ul {
       padding: 0px 20px;

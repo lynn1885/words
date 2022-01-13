@@ -8,8 +8,16 @@ import 'element-ui/lib/theme-chalk/index.css'
 import bookRem1 from './utils/book-rems/蒋争词根.json'
 import bookRem2 from './utils/book-rems/蒋争词缀.json'
 import bookRem3 from './utils/book-rems/李平武.json'
+import bookRem4 from './utils/book-rems/词源故事.json'
+import bookRem4Text from './utils/book-rems/词源故事text.json'
 import coca from './utils/coca.json'
 import * as wordsModel from '@/models/words.ts'
+
+for (const word in bookRem4) {
+  bookRem4[word] = {
+    meaning: bookRem4Text[bookRem4[word]]
+  }
+}
 
 // coca词频
 Vue.prototype.coca = coca
@@ -18,7 +26,8 @@ Vue.prototype.coca = coca
 const bookRems = {
   '蒋争词根': bookRem1,
   '蒋争词缀': bookRem2,
-  '李平武': bookRem3
+  '李平武': bookRem3,
+  '词源故事': bookRem4
 }
 Vue.prototype.bookRems = bookRems
 
