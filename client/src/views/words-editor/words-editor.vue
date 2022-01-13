@@ -210,7 +210,7 @@
                 </div>
               </div>
               <!-- 书本内容 -->
-              <div class="book-content" v-html="bookValue.meaning.replace('\n', '<br>')">
+              <div class="book-content" v-html="bookValue.meaning.replace(/\n/g, '<br>')">
               </div>
             </div>
             <!-- 图片 -->
@@ -222,6 +222,27 @@
                 @click="showImageModal(imgsServerUrl + '/root/' + scope.row.word + '.jpeg')"
               />
             </div>
+
+          </div>
+
+          <!-- 同义词 -->
+          <div class="word-book synonyms" v-if="scope.row.synonyms">
+            <div class="book-name">同义词</div>
+            <div class="book-content">
+              <div
+                v-for="(word, wordIndex) of scope.row.synonyms"
+                :key="'acceptation' + wordIndex"
+                class="word-acceptation"
+              >
+                <div class="word">{{word.word}}</div>
+                {{word.pos[0]}} {{word.acceptation[0]}}
+                <br>
+                {{word.pos[1]}} {{word.acceptation[1]}}
+                <br>
+                {{word.pos[2]}} {{word.acceptation[2]}}
+              </div>
+            </div>
+
           </div>
         </template>
       </el-table-column>
@@ -303,6 +324,15 @@ export default {
       },
       curRoot: '', // 当前词根
       rootWords: null // 词根单词
+    }
+  },
+  watch: {
+    curWordsInfo: {
+      handler (value) {
+        if (value && value.length) {
+          this.findSynonyms(value)
+        }
+      }
     }
   },
   methods: {
@@ -610,6 +640,39 @@ export default {
           .catch(e => {})
         if (ifFinded) {
           break
+        }
+      }
+    },
+
+    // 找同义词
+    async findSynonyms (words) {
+      for (const word of words) {
+        try {
+          if (word && word.acceptation && word.acceptation[0]) {
+            const findText = word.acceptation[0].split(/，|；/)[0].trim()
+            if (findText) {
+              await wordsModel
+                .find({
+                  dsl: {
+                    acceptation: findText
+                  },
+                  limit: 5
+                })
+                .then(res => {
+                  let synonyms = []
+                  for (let wordInfo of res.data) {
+                    if (wordInfo.word) {
+                      wordInfo.bookRems = this.getWordBookRem(wordInfo.word)
+                    }
+                    synonyms.push(wordInfo)
+                  }
+                  synonyms = synonyms.filter(item => item.word !== word.word)
+                  if (synonyms && synonyms.length) this.$set(word, 'synonyms', synonyms)
+                })
+            }
+          }
+        } catch (error) {
+          console.error('找同义词失败: ', word, error)
         }
       }
     },
@@ -929,7 +992,7 @@ export default {
       for (let bookName in this.bookRems) {
         const words = this.bookRems[bookName]
         for (let wordName in words) {
-          if (words[wordName].root[root]) {
+          if (words[wordName].root && words[wordName].root[root]) {
             foundWords.push(wordName)
           }
         }
@@ -1303,6 +1366,17 @@ export default {
         width: 100%;
         border-radius: 4px;
       }
+    }
+  }
+
+  /* 同义词 */
+  .synonyms {
+    .word {
+      width: fit-content;
+      color: rgb(218, 173, 95);
+      padding-left: 4px;
+      border-radius: 4px;
+      margin-top: 4px;
     }
   }
 

@@ -15,7 +15,7 @@ import * as wordsModel from '@/models/words.ts'
 
 for (const word in bookRem4) {
   bookRem4[word] = {
-    meaning: bookRem4Text[bookRem4[word]]
+    meaning: bookRem4Text[bookRem4[word]].join('\n')
   }
 }
 

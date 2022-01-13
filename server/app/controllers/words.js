@@ -91,7 +91,7 @@ exports.find = async function (req, res) {
   }
 
   // 查找
-  searchRes = await Words.find(query.dsl, null, { limit: 100 });
+  searchRes = await Words.find(query.dsl, null, { limit: query.limit || 100 });
   searchRes.forEach(doc => {
     doc._doc.collins = collins[doc._doc.word.toLowerCase()]
   })
