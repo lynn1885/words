@@ -234,7 +234,8 @@
                 :key="'acceptation' + wordIndex"
                 class="word-acceptation"
               >
-                <div class="word">{{word.word}}</div>
+                <div class="word">{{word.word}}</div> {{coca[word.word.toLowerCase()]}}
+                <br>
                 {{word.pos[0]}} {{word.acceptation[0]}}
                 <br>
                 {{word.pos[1]}} {{word.acceptation[1]}}
@@ -242,7 +243,22 @@
                 {{word.pos[2]}} {{word.acceptation[2]}}
               </div>
             </div>
+          </div>
 
+          <!-- 相关单词 -->
+          <div class="word-book related-words" v-if="scope.row.relatedWords">
+            <div class="book-name">相关单词</div>
+            <div class="book-content">
+              <div class="type-container" v-for="(typeObj, typeName) in scope.row.relatedWords" :key="typeName">
+                <div v-show="Object.keys(typeObj).length">
+                  <!-- <div class="type-name">{{typeName}}</div> -->
+                  <div class="word-container" v-for="word in typeObj" :key="word.word">
+                    {{typeName}} <div class="word">{{word.word}}</div> {{coca[word.word.toLowerCase()]}}
+                    <div>{{word.pos[0]}} {{word.acceptation[0]}}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </template>
       </el-table-column>
@@ -328,9 +344,12 @@ export default {
   },
   watch: {
     curWordsInfo: {
+      deep: false,
       handler (value) {
         if (value && value.length) {
+          console.log('当前页更新单词')
           this.findSynonyms(value)
+          this.findRelatedWords(value)
         }
       }
     }
@@ -386,6 +405,10 @@ export default {
             throw new Error('words.vue, 获取单词信息失败' + word + err)
           })
       }
+      tempCurWordsInfo.map(item => {
+        item.synonyms = null
+        item.relatedWords = null
+      })
 
       if (isReturn) {
         return tempCurWordsInfo
@@ -506,6 +529,10 @@ export default {
               tempCurWordsInfo.push(wordInfo)
             }
             this.$message.success(`要添加的单词已存在, 共找到 ${res.data.length} 个相关单词`)
+            tempCurWordsInfo.map(item => {
+              item.synonyms = null
+              item.relatedWords = null
+            })
             this.curWordsInfo = tempCurWordsInfo
             this.updateWordInfoObj()
           })
@@ -649,7 +676,7 @@ export default {
       for (const word of words) {
         try {
           if (word && word.acceptation && word.acceptation[0]) {
-            const findText = word.acceptation[0].split(/，|；/)[0].trim()
+            const findText = word.acceptation[0].split(/，|；/)[0].trim().replace(/[的地]$/, '')
             if (findText) {
               await wordsModel
                 .find({
@@ -667,13 +694,117 @@ export default {
                     synonyms.push(wordInfo)
                   }
                   synonyms = synonyms.filter(item => item.word !== word.word)
-                  if (synonyms && synonyms.length) this.$set(word, 'synonyms', synonyms)
+
+                  if (synonyms && synonyms.length) {
+                    word.synonyms = synonyms
+                  }
                 })
             }
           }
         } catch (error) {
           console.error('找同义词失败: ', word, error)
         }
+      }
+    },
+
+    // 找相关词
+    async findRelatedWords (words) {
+      for (const wordObj of words) {
+        const word = wordObj.word.toLowerCase()
+        let res = new Set()
+        let resObj = {
+          以该词开始: [],
+          以该词结束: [],
+          包含该词: [],
+          元音替换: [],
+          词中词: []
+        }
+
+        if (word.length < 4) continue
+
+        const vowelReg = new RegExp('^' + word.replace(/[aeiou]/g, '[aeiou]') + '$')
+        const cocaArr = this.cocaArr.slice(0, 25000)
+        for (const cocaWord of cocaArr) {
+          if (res.length >= 10) break
+          // 以该单词开头
+          if (cocaWord.startsWith(word) && cocaWord !== word) {
+            if (!res.has(cocaWord)) {
+              res.add(cocaWord)
+              resObj.以该词开始.push(cocaWord)
+            }
+          }
+          // 以该单词结束
+          if (cocaWord.endsWith(word) && cocaWord !== word) {
+            if (!res.has(cocaWord)) {
+              res.add(cocaWord)
+              resObj.以该词结束.push(cocaWord)
+            }
+          }
+          // 包含该单词
+          if (cocaWord.includes(word) && cocaWord !== word) {
+            if (!res.has(cocaWord)) {
+              res.add(cocaWord)
+              resObj.包含该词.push(cocaWord)
+            }
+          }
+          // 和该单词元音替换
+          if (vowelReg.test(cocaWord) && cocaWord !== word) {
+            if (cocaWord !== word) {
+              if (!res.has(cocaWord)) {
+                res.add(cocaWord)
+                resObj.元音替换.push(cocaWord)
+              }
+            }
+          }
+        }
+
+        // 提取部分单词
+        let partWords = new Set();
+        [1, 2, 3, 4, 5, 6, 7].forEach(number => {
+          const part1 = word.slice(0, number)
+          const part2 = word.slice(number, 99)
+          const part3 = word.slice(number, number + 4)
+          const part4 = word.slice(number, number + 5)
+          const part5 = word.slice(number, number + 6)
+          const part6 = word.slice(number, number + 7);
+
+          [part1, part2, part3, part4, part5, part6].forEach(part => {
+            if (part.length >= 4 && part !== word) {
+              partWords.add(part)
+            }
+          })
+        })
+        partWords = Array.from(partWords)
+        partWords.forEach(partWord => {
+          if (this.coca[partWord]) {
+            res.add(partWord)
+            resObj.词中词.push(partWord)
+          }
+        })
+
+        try {
+          const resMeanings = {}
+          res = Array.from(res)
+          const wordsInfo = await this.getWordsInfo(res, true)
+          res.forEach((word, index) => {
+            resMeanings[word] = wordsInfo[index]
+          })
+
+          let i = 0
+          for (const type in resObj) {
+            let typeObj = {}
+            for (const word of resObj[type]) {
+              typeObj[word] = resMeanings[word]
+              i++
+            }
+            resObj[type] = typeObj
+          }
+          if (i === 0) resObj = null
+        } catch (error) {
+          console.error('查找相关单词错误: ', word, error)
+        }
+
+        wordObj.relatedWords = resObj
       }
     },
 
@@ -1354,7 +1485,7 @@ export default {
         }
       }
       .book-content {
-        max-height: 200px;
+        max-height: 160px;
         overflow: auto;
       }
     }
@@ -1372,9 +1503,28 @@ export default {
   /* 同义词 */
   .synonyms {
     .word {
-      width: fit-content;
-      color: rgb(218, 173, 95);
-      padding-left: 4px;
+      display: inline-block;
+      color: #666;
+      padding: 0px 4px;
+      background: #f4f4f4;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+  }
+
+  .related-words {
+    .type-name {
+      background: #f4f4f4;
+      border-radius: 4px;
+      color: #666;
+      padding: 0px 4px;
+      margin: 2px 0px;
+    }
+    .word {
+      display: inline-block;
+      color: #666;
+      padding: 0px 4px;
+      background: #f4f4f4;
       border-radius: 4px;
       margin-top: 4px;
     }
@@ -1382,7 +1532,7 @@ export default {
 
   /* 柯林斯字典 */
   .collions {
-    max-height: 200px;
+    max-height: 240px;
     overflow: auto;
     ul {
       padding: 0px 20px;

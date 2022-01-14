@@ -21,6 +21,7 @@ for (const word in bookRem4) {
 
 // coca词频
 Vue.prototype.coca = coca
+Vue.prototype.cocaArr = Object.keys(coca)
 
 // 已有记忆
 const bookRems = {
