@@ -234,7 +234,7 @@
                 :key="'acceptation' + wordIndex"
                 class="word-acceptation"
               >
-                <div class="word">{{word.word}}</div> {{coca[word.word.toLowerCase()]}}
+                <i class="el-icon-star-on"></i> <div class="word">{{word.word}}</div> {{coca[word.word.toLowerCase()]}}
                 <br>
                 {{word.pos[0]}} {{word.acceptation[0]}}
                 <br>
@@ -253,7 +253,7 @@
                 <div v-show="Object.keys(typeObj).length">
                   <!-- <div class="type-name">{{typeName}}</div> -->
                   <div class="word-container" v-for="word in typeObj" :key="word.word">
-                    {{typeName}} <div class="word">{{word.word}}</div> {{coca[word.word.toLowerCase()]}}
+                    <i class="el-icon-star-on"></i> {{typeName}} <div class="word">{{word.word}}</div> {{coca[word.word.toLowerCase()]}}
                     <div>{{word.pos[0]}} {{word.acceptation[0]}}</div>
                   </div>
                 </div>
@@ -719,6 +719,10 @@ export default {
           元音替换: [],
           词中词: []
         }
+        let wordMainPart = word
+        if (word.endsWith('y')) {
+          wordMainPart = word.replace(/y$/, '')
+        }
 
         if (word.length < 4) continue
 
@@ -727,21 +731,21 @@ export default {
         for (const cocaWord of cocaArr) {
           if (res.length >= 10) break
           // 以该单词开头
-          if (cocaWord.startsWith(word) && cocaWord !== word) {
+          if (cocaWord.startsWith(wordMainPart) && cocaWord !== word) {
             if (!res.has(cocaWord)) {
               res.add(cocaWord)
               resObj.以该词开始.push(cocaWord)
             }
           }
           // 以该单词结束
-          if (cocaWord.endsWith(word) && cocaWord !== word) {
+          if (cocaWord.endsWith(wordMainPart) && cocaWord !== word) {
             if (!res.has(cocaWord)) {
               res.add(cocaWord)
               resObj.以该词结束.push(cocaWord)
             }
           }
           // 包含该单词
-          if (cocaWord.includes(word) && cocaWord !== word) {
+          if (cocaWord.includes(wordMainPart) && cocaWord !== word) {
             if (!res.has(cocaWord)) {
               res.add(cocaWord)
               resObj.包含该词.push(cocaWord)
@@ -1504,7 +1508,7 @@ export default {
   .synonyms {
     .word {
       display: inline-block;
-      color: #666;
+      color: #444;
       padding: 0px 4px;
       background: #f4f4f4;
       border-radius: 4px;
@@ -1516,13 +1520,13 @@ export default {
     .type-name {
       background: #f4f4f4;
       border-radius: 4px;
-      color: #666;
+      color: #555;
       padding: 0px 4px;
       margin: 2px 0px;
     }
     .word {
       display: inline-block;
-      color: #666;
+      color: #555;
       padding: 0px 4px;
       background: #f4f4f4;
       border-radius: 4px;
