@@ -200,7 +200,7 @@ export default {
     }
   },
   async mounted () {
-    this.listAllBooks()
+    await this.listAllBooks()
   }
 }
 </script>

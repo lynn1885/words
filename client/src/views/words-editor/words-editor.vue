@@ -132,6 +132,11 @@
                   <i class="el-icon-star-on"></i>
                 </div>
               </div>
+              <div class="wechat">
+                <div @click="showWechatCard(scope.row)" title="微信公众号">
+                  <i class="el-icon-share"></i>
+                </div>
+              </div>
             </div>
           </div>
         </template>
@@ -269,6 +274,24 @@
       <img :src="imageModalSrc" style="width: 100%" />
     </el-dialog>
 
+    <!-- 微信卡片 -->
+    <el-dialog title="微信卡片" v-if="isShowWechatCard" :visible.sync="isShowWechatCard" width="800px">
+      <div>单词: {{wechatWord.word}}</div>
+      <div>含义:
+        <span
+          v-for="(item, index) of wechatWord.pos"
+          :key="'acceptation' + index"
+        >
+          <span>{{item}}</span>
+          {{' ' + wechatWord.acceptation[index]}}
+        </span>
+      </div>
+      <div>音标: 英 /{{wechatWord.ps[0]}}/  美 /{{wechatWord.ps[1]}}/</div>
+      <div>记忆: 谐音</div>
+      <a :href="wechatWord.pron[0]" target="_blank" :download="wechatWord.word + '.mp3'">下载英音</a>
+      <a :href="wechatWord.pron[1]" target="_blank" :download="wechatWord.word + '.mp3'">下载美音</a>
+    </el-dialog>
+
     <!-- 词根单词 -->
     <div class="root-words" v-show="rootWords" ref="root-words">
       <i class="close el-icon-close" @click="rootWords = false"></i>
@@ -317,12 +340,14 @@ export default {
       curWordsInfoObj: {}, // 当前单词及详细注释, 对象格式
       curWordsImgs: {}, // 当前单词图片
       curWordsAudios: {},
+      wechatWord: null, // 当前微信单词
       curSelectedRowWord: '', // 当前选中行对应的单词
       imgsServerUrl: config.imgsServerUrl, // 图片服务器地址
       audiosServerUrl: config.audiosServerUrl, // 音频服务器地址
       imageModalSrc: '', // 模态框显示图片的url
       isShowDelWord: false, // 是否显示删除单词
       isShowImageModal: false, // 是否显示图片模态框
+      isShowWechatCard: false, // 是否显示微信窗口
       sideBarInfo1: '', // 侧边栏信息
       sideBarInfo2: '', // 侧边栏信息
       googleImagesClient: null, // google images client
@@ -1162,6 +1187,13 @@ export default {
       setTimeout(() => {
         this.$refs['root-words'].scrollTop = 0
       }, 500)
+    },
+
+    // 展示微信卡片
+    showWechatCard (row) {
+      this.isShowWechatCard = true
+      this.wechatWord = row
+      this.copyWord(row.word)
     }
   },
 
@@ -1430,6 +1462,19 @@ export default {
           }
         }
       }
+      .wechat {
+          background: transparent;
+          padding: 0;
+          div {
+            background: #f4f4f4;
+            margin: 1px;
+            cursor: pointer;
+            &:hover {
+              background: rgb(149, 200, 123);
+              color: #fff;
+            }
+          }
+        }
     }
 
     /* 含义 */
