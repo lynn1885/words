@@ -289,8 +289,13 @@
         </span>
       </div>
       <div>音标: 英 /{{wechatWord.ps[0]}}/  美 /{{wechatWord.ps[1]}}/</div>
-      <div>词频: {{coca[wechatWord.word.toLowerCase()]}} (词频越低越常用，词频 10,000 以下约为常用词)</div>
       <div>记忆: 谐音</div>
+      <div>词频: {{coca[wechatWord.word.toLowerCase()]}} (词频越低越常用, 比如the的词频是1, 最为常用。词频 1 ~ 10,000 约为常用词)</div>
+      <div>同义词:</div>
+      <div>相关词:</div>
+      <div>词根词缀:</div>
+
+      <br>
       <a :href="wechatWord.pron[0]" target="_blank" :download="wechatWord.word + '.mp3'">下载英音</a>
       <a :href="wechatWord.pron[1]" target="_blank" :download="wechatWord.word + '.mp3'">下载美音</a>
     </el-dialog>
