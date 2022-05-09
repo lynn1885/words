@@ -276,6 +276,8 @@
 
     <!-- 微信卡片 -->
     <el-dialog title="微信卡片" v-if="isShowWechatCard" :visible.sync="isShowWechatCard" width="800px">
+      <div>{{wechatWord.word}}</div>
+      <br>
       <div>单词: {{wechatWord.word}}</div>
       <div>含义:
         <span
@@ -287,6 +289,7 @@
         </span>
       </div>
       <div>音标: 英 /{{wechatWord.ps[0]}}/  美 /{{wechatWord.ps[1]}}/</div>
+      <div>词频: {{coca[wechatWord.word.toLowerCase()]}} (词频越低越常用，词频 10,000 以下约为常用词)</div>
       <div>记忆: 谐音</div>
       <a :href="wechatWord.pron[0]" target="_blank" :download="wechatWord.word + '.mp3'">下载英音</a>
       <a :href="wechatWord.pron[1]" target="_blank" :download="wechatWord.word + '.mp3'">下载美音</a>
