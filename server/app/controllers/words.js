@@ -14,6 +14,7 @@ exports.search = async function (req, res) {
     status: 'old',	// 单词状态: 可取值: new | old, 如果是新添加的, 则状态为new, 默认old
   };
 
+
   // 查询的单词必须是字符串
   if (!_.isString(word)) {
     let warnMsg = {

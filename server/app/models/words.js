@@ -38,7 +38,7 @@ WordsSchema.static('fecth', async function (word) {
   // 从远程获取xml
   let result = {};
   let xmlStr;
-  await axios.get(dictUrl + word + dictKey)
+  await axios.get(encodeURI(dictUrl + word + dictKey))
     .then(res => {
       if (res.status && res.status === 200) {
         xmlStr = res.data;
